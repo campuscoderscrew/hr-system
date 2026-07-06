@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "discord": { "type": "string" },
+    "github": { "type": "string" },
+    "email": { "type": "string", "format": "email" },
+    "previous_roles": { "type": "array", "items": { "type": "string" } },
+    "manager": { "type": "string" },
+    "direct_reports": { "type": "array", "items": { "type": "string" } },
+    "team": { "type": "string", "enum": ["COMMITTEES", "DEVELOPMENT", "BOTH"] }
+  },
+  "required": ["name", "discord", "github", "email", "team"]
+}
