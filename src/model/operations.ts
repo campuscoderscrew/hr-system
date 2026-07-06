@@ -19,10 +19,17 @@ export function moveMember(members: Member[], id: string, newRole: Role): void {
 
 // adds a new role to a member without removing their existing role
 export function addRole(members: Member[], id: string, newRole: Role): void {
-    // not finished
+    const member = members.find(m => m.id === id)
+    if (!member) { return }
+    member.currentRoles.push({title: newRole,startDate: new Date()} )
+
+    member.updatedAt = new Date()
 }
 
 // removes a member from the system entirely
 export function removeMember(members: Member[], id: string): void {
-    // not finished
+    
+    const memberIndex = members.findIndex(m =>m.id === id)
+    if (memberIndex === -1) { return }
+    members.splice(memberIndex,1)
 }
