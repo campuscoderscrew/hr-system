@@ -26,6 +26,7 @@
   "devDependencies": {
     "@react-router/dev": "^7.1.5",
     "@tailwindcss/vite": "^4.0.0",
+    "@types/express": "^5.0.6",
     "@types/next": "^8.0.7",
     "@types/node": "^20",
     "@types/react": "^18.2.0",
@@ -35,6 +36,7 @@
     "postcss": "^8.5.3",
     "react-router-devtools": "^1.1.0",
     "tailwindcss": "^4.1.4",
+    "tsx": "^4.23.0",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vite-tsconfig-paths": "^5.1.4"
