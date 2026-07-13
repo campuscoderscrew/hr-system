@@ -8,6 +8,7 @@ import { Routes, Route } from 'react-router-dom';
 import About from './pages/about.js';
 import Committees from './pages/committees.js';
 import CommitteePage from './components/committee_page.js';
+import LoginScreen from './pages/login.js';
 
 export default function App() {
   return (
@@ -15,7 +16,8 @@ export default function App() {
       <Route path="/" element={<About />} />
       <Route path="about" element={<About />} />
       <Route path="committees" element={<Committees />} />
-      <Route path="committeepage" element={<CommitteePage/>} />
+      <Route path="committeepage" element={<CommitteePage />} />
+      <Route path="login" element={<LoginScreen />} />
     </Routes>
   );
 }
