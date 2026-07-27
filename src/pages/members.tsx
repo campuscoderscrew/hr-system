@@ -1,36 +1,28 @@
 import React from "react";
 
 import NavBar from "~/components/navbar";
-import { DepartmentLayout, OperationsSectorLayout } from "./SpreadsheetLayout";
+import { DepartmentLayout, OperationsSectorLayout } from "../components/SpreadsheetLayout";
 import type { Department, Membership, OperationsSector, Team } from "~/model/types";
+import { members } from "~/model/data";
 
-export default function About() {
-  const member = {
-    name: "John Doe",
-    discord: "discord_username",
-    email: "john_doe@gmail.com",
-    role: "Developer" as const,
-    currentRoles: [{ role: "Developer" as const, startDate: new Date("1970-01-01"), supervisor: "Jane Smith" }],
-    supervisors: [] as string[],
-  } as Membership;
-
+export default function Members() {
   const team: Team = {
     name: "Team Lemon",
-    members: [{ ...member, github: "github_username" }, member, member],
-    teamLead: member,
+    members: members,
+    teamLead: members.find((member) => member.role === "Team Lead")!,
   };
 
   const department = {
     name: "Development Department",
     abbreviation: "Dev",
-    members: [member, member, member],
+    members: members,
     teams: [team, team, team],
   } as Department;
 
   const sector = {
     name: "Development Operations",
     departments: [department, department],
-    leadership: [member, member],
+    leadership: members,
   } as OperationsSector;
 
   return (

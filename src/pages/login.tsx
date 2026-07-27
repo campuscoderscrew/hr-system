@@ -19,7 +19,7 @@ export default function LoginScreen() {
     const user = users.find((item) => item.username === username.trim());
     if (user && user.password === password) {
       setError('');
-      navigate('/spreadsheet-layout');
+      navigate('/members');
       return;
     }
 
