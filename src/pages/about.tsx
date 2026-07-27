@@ -2,27 +2,17 @@ import React from "react";
 
 import NavBar from "~/components/navbar";
 import { DepartmentLayout, OperationsSectorLayout } from "./SpreadsheetLayout";
-import type { Department, Member, OperationSector, Team } from "~/model/types";
+import type { Department, Membership, OperationsSector, Team } from "~/model/types";
 
 export default function About() {
-  const member: Member = {
+  const member = {
     name: "John Doe",
     discord: "discord_username",
-
     email: "john_doe@gmail.com",
-    academicStanding: "freshman",
-
-    availability: "1-5",
-    proficiency: "3-3-3-3-3 (15)",
-    status: "active",
-
-    currentRoles: [
-      {
-        title: "Developer",
-        startDate: new Date("1970-01-01")
-      },
-    ],
-  };
+    role: "Developer" as const,
+    currentRoles: [{ role: "Developer" as const, startDate: new Date("1970-01-01"), supervisor: "Jane Smith" }],
+    supervisors: [] as string[],
+  } as Membership;
 
   const team: Team = {
     name: "Team Lemon",
@@ -30,24 +20,22 @@ export default function About() {
     teamLead: member,
   };
 
-  const department: Department = {
+  const department = {
     name: "Development Department",
+    abbreviation: "Dev",
+    members: [member, member, member],
     teams: [team, team, team],
-    teamLeads: [member, member, member],
-    head: member,
-  };
+  } as Department;
 
-  const sector: OperationSector = {
-    name: "Development Opereations",
+  const sector = {
+    name: "Development Operations",
     departments: [department, department],
-    departmentHeads: [member, member],
-    vicePresident: member,
-  };
+    leadership: [member, member],
+  } as OperationsSector;
 
   return (
     <div className="">
       <NavBar />
-      About Boilerplate
       <div className="h-screen grid place-items-center ">
         <OperationsSectorLayout sector={sector} />
       </div>

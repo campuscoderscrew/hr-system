@@ -45,6 +45,12 @@ export interface Profiency {
     totalSum?: number;
 }
 
+export function proficiencyToString(proficiency: Profiency): string {
+    const { frontEnd, backEnd, design, versionControl, devOps, totalSum } = proficiency;
+    const ratings = [frontEnd, backEnd, design, versionControl, devOps, totalSum];
+    return frontEnd + "-" + backEnd + "-" + design + "-" + versionControl + "-" + devOps + " (" + totalSum + ")";
+}
+
 /**
  * Availability
  */
@@ -59,6 +65,19 @@ export type Availability =
 | { kind: "lessThan"; max: number} // e.g. <1
 | { kind: "status"; status: AvailabilityStatus}; // -, INACTIVE, BREAK
 
+export function availabilityToString(availability: Availability): string {
+    switch (availability.kind) {
+        case "range":
+            return `${availability.min}-${availability.max}`;
+        case "atLeast":
+            return `${availability.min}+`;
+        case "lessThan":
+            return `<${availability.max}`;
+        case "status":
+            return availability.status;
+    }
+}
+
 /**
  * Membership
  */
@@ -67,6 +86,7 @@ export interface Membership {
     role: Role;
     name: string;
     desiredRole?: Role; // Role written in parentheses in sheet
+    currentRoles: { role: Role; startDate: Date, supervisor: string }[]; // Roles held by member, with start dates
     discord?: string;
     email?: string;
     github?: string;
@@ -99,6 +119,7 @@ export interface Team {
     techStack?: string[];
     website?: string;
     members: Membership[];
+    teamLead: Membership;
 }
 
 // Cluster build (contains multiple teams)

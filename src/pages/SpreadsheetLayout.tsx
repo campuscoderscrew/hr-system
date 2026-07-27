@@ -4,14 +4,15 @@
 import type { ClassValue } from "clsx";
 import type {
   Department,
-  Member,
-  OperationSector,
+  Membership,
+  OperationsSector,
   Role,
   Team,
 } from "~/model/types";
+import { proficiencyToString, availabilityToString } from "~/model/types";
 import { cn } from "~/utils";
 
-const TeamLayout = (props: { className?: ClassValue[]; team: Team | any }) => {
+const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
   const { className, team } = props;
 
   return (
@@ -27,18 +28,18 @@ const TeamLayout = (props: { className?: ClassValue[]; team: Team | any }) => {
       <span className="bg-rose-100">{team.name}</span>
 
       <div className="flex gap-[2px] divide-x">
-        {team.members.map((member: Member, index: number) => {
+        {team.members.map((member: Membership, index: number) => {
           // Assumes roles and supervisors are of same length with corresponding entries
-          const supervisorIdx = member.supervisors.indexOf(team.teamLead);
-          const currentRole = member.currentRoles[supervisorIdx].role;
+          const supervisorIdx = member.currentRoles.findIndex((role) => role.supervisor === team.teamLead.name);
+          const currentRole = member.currentRoles[supervisorIdx]?.role;
 
           return (
             <div className="flex flex-col divide-y">
               <span>{currentRole}</span>
               <span>{member.name}</span>
               <span>{member.discord}</span>
-              {member.proficiency && <span>{member.proficiency}</span>}
-              <span>{member.availability}</span>
+              {member.proficiency && <span>proficiency: {proficiencyToString(member.proficiency)}</span>}
+              {member.availability && <span>availability: {availabilityToString(member.availability)}</span>}
               {member.github && <span>{member.github}</span>}
               <span>{member.email}</span>
             </div>
@@ -72,7 +73,7 @@ const DepartmentLayout = (props: {
 
 const OperationsSectorLayout = (props: {
   className?: ClassValue[];
-  sector: OperationSector | any;
+  sector: OperationsSector | any;
 }) => {
   const { className, sector } = props;
   return (
