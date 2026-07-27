@@ -3,8 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import NavBar from '~/components/navbar';
 
 const users = [
-  { username: 'admin', password: 'password123', userType: 'admin' },
-  { username: 'user1', password: 'secret', userType: 'member' },
+  { username: 'admin', password: 'password123', userType: 'ADMIN' },
+  { username: 'user1', password: 'secret', userType: 'MEMBER' },
+  { username: '6', password: '7', userType: 'ADMIN' },
 ];
 
 export default function LoginScreen() {

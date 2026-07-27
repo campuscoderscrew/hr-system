@@ -16,6 +16,9 @@
 // Role codes from the sheet's KEY:
 // PL = Primary (Team) Lead, SL = Secondary (Team) Lead, TL = Team Lead,
 // H = Head, M = Member.
+
+
+export type UserType = "ADMIN" | "MEMBER" | "GUEST";
 export type Role =
 | "PL"
 | "SL"

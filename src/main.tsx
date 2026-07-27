@@ -12,7 +12,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginScreen />} />
-      <Route path="main" element={<Members />} />
+      <Route path="members" element={<Members />} />
       <Route path="login" element={<LoginScreen />} />
     </Routes>
   );
