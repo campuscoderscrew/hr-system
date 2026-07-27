@@ -9,8 +9,6 @@ export default function NavBar(){
                 </div>
 
                 <div className="flex space-x-6">
-                    <Link to="/about">About</Link>
-                    <Link to="/committees">Committees</Link>
                     <Link to="/login">Login</Link>
                 </div>
 
