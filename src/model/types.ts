@@ -1,142 +1,169 @@
-export type MemberStatus =
-    | "active"
-    | "inactive"
-    | "break"
-    | "not_in_discord"
-    | "undergoing_processing"
+// Models the CCC Crew Formations [CREW-R] spreadsheet
+//
+// Organization
+// ├─ Board                (Advisory / Executive / Minor)
+// │  └─ OperationsSector  (Executive board only: Internal / External / Development)
+// │       └─ Department   (Analytics, HR, Finance, QA, ...)
+// └─ Cluster              (Caribbean, Bering, ... — the developer membership)
+//    └─ Team              (Angel, Whale, Shortfin, ...)
+//
+// Clusters/Teams are separate from the board hierarchy
 
+/**
+ * Roles
+ */
+
+// Role codes from the sheet's KEY:
+// PL = Primary (Team) Lead, SL = Secondary (Team) Lead, TL = Team Lead,
+// H = Head, M = Member.
+
+
+export type UserType = "ADMIN" | "MEMBER" | "GUEST";
 export type Role =
-    // Exec
-    | "President"
-    | "Vice President of Development Operations"
-    | "Vice President of Internal Operations"
-    | "Vice President of External Operations"
+| "PL"
+| "SL"
+| "TL"
+| "H"
+| "M"
+| "Head"
+| "Developer"
+| "Jr. Developer"
+| "Advisor"
+| (string & {}) // Allows one-off titles (e.g. "Internal VP", "Jr. Analyst")
 
-    // Dev Operations
-    | "Development Department Head"
-    | "Primary Lead"
-    | "Secondary Lead"
-    | "Jr. Developer"
-    | "Developer"
-    | "Sr. Developer"
-    | "Jr. Designer"
-    | "Designer"
-    | "Sr. Designer"
-    | "Quality Assurance Department Head"
-    | "Jr. QA Tester"
-    | "QA Tester"
-    | "Sr. QA Tester"
-    | "Product Department Head"
-    | "Jr. Product Manager"
-    | "Product Manager"
-    | "Sr. Product Manager"
+/**
+ * Proficiency
+ */
 
-    // Internal Operations
-    | "Finance Department Head"
-    | "Accounting Team Lead"
-    | "Jr. Accountant"
-    | "Accountant"
-    | "Sr. Accountant"
-    | "Investment Team Lead"
-    | "Jr. Financial Analyst"
-    | "Financial Analyst"
-    | "Sr. Financial Analyst"
-    | "Jr. Fundraiser"
-    | "Fundraiser"
-    | "Sr. Fundraiser"
-    | "Resource Management Department Head"
-    | "Jr. Resource Manager"
-    | "Resource Manager"
-    | "Sr. Resource Manager"
-    | "Analytics Department Head"
-    | "Jr. Analyst"
-    | "Analyst"
-    | "Sr. Analyst"
-    | "Auditing Department Head"
-    | "Jr. Auditor"
-    | "Auditor"
-    | "Sr. Auditor"
-    | "Human Resources Department Head"
-    | "Jr. HR Specialist"
-    | "HR Specialist"
-    | "Sr. HR Specialist"
-    | "Events Head"
+// One aspect's rating (ranges 1-4)
+export type ProfiencyRating = number | "X";
 
-    // External Operations
-    | "Marketing Department Head"
-    | "Jr. Marketer"
-    | "Marketer"
-    | "Sr. Marketer"
-    | "Recruitment Department Head"
-    | "Jr. Recruiter"
-    | "Recruiter"
-    | "Sr. Recruiter"
-    | "Public Relations Head"
-    | "Jr. PR Specialist"
-    | "PR Specialist"
-    | "Sr. PR Specialist"
-    | "Graphic Design Head"
-    | "Graphic Design Team Lead"
-    | "Jr. Graphic Designer"
-    | "Graphic Designer"
-    | "Sr. Graphic Designer"
-
-export type RoleEntry = {
-    title: Role
-    startDate: Date
-    endDate: Date
+// Front-End / Back-End / Design (Figma) / Version Control / Dev Ops
+export interface Profiency {
+    frontEnd?: ProfiencyRating;
+    backEnd?: ProfiencyRating;
+    design?: ProfiencyRating;
+    versionControl?: ProfiencyRating;
+    devOps?: ProfiencyRating;
+    totalSum?: number;
 }
 
-export type CurrentRole = {
-    title: Role
-    startDate: Date
+export function proficiencyToString(proficiency: Profiency): string {
+    const { frontEnd, backEnd, design, versionControl, devOps, totalSum } = proficiency;
+    const ratings = [frontEnd, backEnd, design, versionControl, devOps, totalSum];
+    return frontEnd + "-" + backEnd + "-" + design + "-" + versionControl + "-" + devOps + " (" + totalSum + ")";
 }
 
-export type Department =
-    | "advisory_board"
-    | "executive_board"
-    | "minor_board"
-    | "development_operations"
-    | "internal_operations"
-    | "external_operations"
+/**
+ * Availability
+ */
 
-export type Cluster =
-    | "Caribbean"
-    | "Bering"
-    | "Caspian"
-    | "Mediterranean"
+// Non-numeric availability states
+export type AvailabilityStatus = "INACTIVE" | "BREAK" | "UNKNOWN";
 
-export type Team =
-    // Caribbean Cluster
-    | "Angel"
-    | "Whale"
-    | "Shortfin"
-    | "Blue"
-    // Bering Cluster
-    | "Leopard"
-    | "Mako"
-    | "Hammerhead"
-    | "Lemon"
-    | "Cookiecutter"
-    | "Zebra"
-    | "Nurse"
-    | "Silky"
+// Availability in hours
+export type Availability =
+| { kind: "range"; min: number; max: number} // e.g. 6-10
+| { kind: "atLeast"; min: number} // e.g. 20+
+| { kind: "lessThan"; max: number} // e.g. <1
+| { kind: "status"; status: AvailabilityStatus}; // -, INACTIVE, BREAK
 
-export type Member = {
-    id: string
-    name: string
-    email: string
-    discord: string
-    github: string | null
-    availability: string
-    proficiency: string | null
-    status: MemberStatus
-    joinDate: Date
-    department: Department
-    currentRoles: CurrentRole[]
-    team: Team | null
-    cluster: Cluster | null
-    roleHistory: RoleEntry[]
-    createdAt: Date
-    updatedAt: Date
+export function availabilityToString(availability: Availability): string {
+    switch (availability.kind) {
+        case "range":
+            return `${availability.min}-${availability.max}`;
+        case "atLeast":
+            return `${availability.min}+`;
+        case "lessThan":
+            return `<${availability.max}`;
+        case "status":
+            return availability.status;
+    }
+}
+
+/**
+ * Membership
+ */
+
+export interface Membership {
+    role: Role;
+    name: string;
+    desiredRole?: Role; // Role written in parentheses in sheet
+    currentRoles: { role: Role; startDate: Date, supervisor: string }[]; // Roles held by member, with start dates
+    discord?: string;
+    email?: string;
+    github?: string;
+    proficiency?: Profiency;
+    availability?: Availability;
+}
+
+/**
+ * Teams / Clusters
+ */
+
+// Team proficiency statistic
+export interface TeamProficiencyStat {
+    kind: "average" | "median" | "combined";
+    value?: number;
+}
+
+// Team availability requirement
+export interface AvailabilityRule {
+    comparator: ">=" | "<=";
+    hours: number;
+}
+
+// Team build (teams exist under cluster)
+export interface Team {
+    name: string;
+    availabilityRule?: AvailabilityRule;
+    proficiency?: TeamProficiencyStat;
+    maxDevelopers?: number;
+    techStack?: string[];
+    website?: string;
+    members: Membership[];
+    teamLead: Membership;
+}
+
+// Cluster build (contains multiple teams)
+export interface Cluster {
+  /** Cluster name without the "Development Teams:" prefix, e.g. "Caribbean". */
+  name: string;
+  status: "active" | "inactive" | "empty";
+  teams: Team[];
+}
+
+/**
+ * Departments / Operations Sectors
+ */
+
+export interface Department {
+    name: string;
+    abbreviation?: string; // Short form where sheet uses one
+    members: Membership[];
+}
+
+export interface OperationsSector {
+    name: string;
+    leadership: Membership[];
+    departments: Department[];
+}
+
+/**
+ * Boards
+ */
+
+// Flat boards (Advisory, Minor) only list members
+// Executive members structured into Operations sectors
+export type Board =
+| {kind: "flat"; name: string; members: Membership[]}
+| {kind: "operations"; name: string; operations: OperationsSector[]}
+
+/**
+ * Root
+ */
+
+export interface Organization {
+    boards: Board[];
+    clusters: Cluster[];
 }
