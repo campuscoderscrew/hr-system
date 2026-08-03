@@ -2,8 +2,8 @@ import React from "react";
 
 import NavBar from "~/components/navbar";
 import { DepartmentLayout, OperationsSectorLayout } from "../components/SpreadsheetLayout";
-import type { Department, Membership, OperationsSector, Team } from "../../server/model/types";
-import { members } from "../../server/model/data";
+import type { Department, Membership, OperationsSector, Team } from "../../utils/model/types";
+import { members } from "../../utils/model/data";
 
 export default function Members() {
   const team: Team = {

@@ -8,9 +8,9 @@ import type {
   OperationsSector,
   Role,
   Team,
-} from "../../server/model/types";
-import { proficiencyToString, availabilityToString } from "../../server/model/types";
-import { cn } from "~/utils";
+} from "../../utils/model/types";
+import { proficiencyToString, availabilityToString } from "../../utils/model/types";
+import { cn } from "../utils";
 
 const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
   const { className, team } = props;

@@ -15,18 +15,18 @@ function addMember(members: Membership[], member: Membership): Membership {
  * Moves a member from their current role to a new role, clearing all previous
  * roles.
  * @param members List of members in the model
- * @param discord The discord username of the member
+ * @param email The email of the member
  * @param newRole The new role to move the member to
  * @param supervisor The supervisor overseeing the new role
- * @returns The member under the username `discord` if they exist and was moved to the role; `null` otherwise
+ * @returns The member associated with the `email` if they exist and was moved to the role; `null` otherwise
  */
 function moveMember(
   members: Membership[],
-  discord: string,
+  email: string,
   newRole: Role,
   supervisor: string,
 ): Membership | null {
-  const member = members.find((member) => member.discord === discord);
+  const member = members.find((member) => member.email === email);
   if (!member) return null;
 
   member.currentRoles = [{ role: newRole, startDate: new Date(), supervisor }];
@@ -36,18 +36,18 @@ function moveMember(
 /**
  * Adds a new role to a member without removing all existing roles.
  * @param members List of members in the model
- * @param discord The discord username of the member
+ * @param email The email username of the member
  * @param newRole The new role to move the member to
  * @param supervisor The supervisor overseeing the new role
- * @returns The member under the username `discord` if they exist and was added the role; `null` otherwise
+ * @returns The member associated with the `email` if they exist and was added the role; `null` otherwise
  */
 function addRole(
   members: Membership[],
-  discord: string,
+  email: string,
   newRole: Role,
   supervisor: string,
 ): Membership | null {
-  const member = members.find((member) => member.discord === discord);
+  const member = members.find((member) => member.email === email);
   if (!member) return null;
 
   member.currentRoles.push({
@@ -62,14 +62,14 @@ function addRole(
 /**
  * Removes a member from the model
  * @param members List of members in the model
- * @param discord The discord username of the member
- * @returns The member under the username `discord` if they exist and was deleted; `null` otherwise
+ * @param email The email of the member
+ * @returns The member associated with the `email` if they exist and was deleted; `null` otherwise
  */
 function removeMember(
   members: Membership[],
-  discord: string,
+  email: string,
 ): Membership | null {
-  const memberIndex = members.findIndex((member) => member.discord === discord);
+  const memberIndex = members.findIndex((member) => member.email === email);
   if (memberIndex === -1) return null;
 
   const member = members.splice(memberIndex, 1)[0];
