@@ -9,7 +9,7 @@ export default function Members() {
   const team: Team = {
     name: "Team Lemon",
     members: members,
-    teamLead: members.find((member) => member.role === "Team Lead")!,
+    teamLead: members.find((member) => member.role === "TL")!,
   };
 
   const department = {

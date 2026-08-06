@@ -35,23 +35,35 @@ export type Role =
  * Proficiency
  */
 
-// One aspect's rating (ranges 1-4)
+// One aspect's rating (ranges 1-5)
 export type ProfiencyRating = number | "X";
 
 // Front-End / Back-End / Design (Figma) / Version Control / Dev Ops
+// The sheet's total is derived from these five, so it is computed rather than stored
 export interface Profiency {
     frontEnd?: ProfiencyRating;
     backEnd?: ProfiencyRating;
     design?: ProfiencyRating;
     versionControl?: ProfiencyRating;
     devOps?: ProfiencyRating;
-    totalSum?: number;
+}
+
+// Aspects in the sheet's column order
+function proficiencyRatings(proficiency: Profiency): (ProfiencyRating | undefined)[] {
+    const { frontEnd, backEnd, design, versionControl, devOps } = proficiency; // Destructuring
+    return [frontEnd, backEnd, design, versionControl, devOps];
+}
+
+// "X" (not rated) and unset aspects both count as 0
+export function proficiencyTotal(proficiency: Profiency): number {
+    return proficiencyRatings(proficiency).reduce<number>(
+        (sum, rating) => sum + (typeof rating === "number" ? rating : 0), 0
+    );
 }
 
 export function proficiencyToString(proficiency: Profiency): string {
-    const { frontEnd, backEnd, design, versionControl, devOps, totalSum } = proficiency;
-    const ratings = [frontEnd, backEnd, design, versionControl, devOps, totalSum];
-    return frontEnd + "-" + backEnd + "-" + design + "-" + versionControl + "-" + devOps + " (" + totalSum + ")";
+    const ratings = proficiencyRatings(proficiency).map((rating) => rating ?? "X");
+    return `${ratings.join("-")} (${proficiencyTotal(proficiency)})`;
 }
 
 /**
@@ -59,14 +71,14 @@ export function proficiencyToString(proficiency: Profiency): string {
  */
 
 // Non-numeric availability states
-export type AvailabilityStatus = "INACTIVE" | "BREAK" | "UNKNOWN";
+export type AvailabilityStatus = "ACTIVE" | "INACTIVE" | "BREAK" | "UNKNOWN";
 
 // Availability in hours
 export type Availability =
-| { kind: "range"; min: number; max: number} // e.g. 6-10
-| { kind: "atLeast"; min: number} // e.g. 20+
-| { kind: "lessThan"; max: number} // e.g. <1
-| { kind: "status"; status: AvailabilityStatus}; // -, INACTIVE, BREAK
+| { kind: "range"; min: number; max: number, status: AvailabilityStatus } // e.g. 6-10
+| { kind: "atLeast"; min: number, status: AvailabilityStatus } // e.g. 20+
+| { kind: "lessThan"; max: number, status: AvailabilityStatus } // e.g. <1
+| { kind: "hoursUnknown"; status: AvailabilityStatus} // When availability is unknown but status is
 
 export function availabilityToString(availability: Availability): string {
     switch (availability.kind) {
@@ -76,8 +88,8 @@ export function availabilityToString(availability: Availability): string {
             return `${availability.min}+`;
         case "lessThan":
             return `<${availability.max}`;
-        case "status":
-            return availability.status;
+        case "hoursUnknown":
+            return "Hours Unknown"
     }
 }
 
@@ -86,15 +98,21 @@ export function availabilityToString(availability: Availability): string {
  */
 
 export interface Membership {
-    role: Role;
+    id?: string; // Optional for now
     name: string;
-    desiredRole?: Role; // Role written in parentheses in sheet
-    currentRoles: { role: Role; startDate: Date, supervisor: string }[]; // Roles held by member, with start dates
     discord?: string;
-    email?: string;
+    email: string;
     github?: string;
     proficiency?: Profiency;
-    availability?: Availability;
+    availability: Availability;
+    role: Role;
+    currentRoles: { role: Role; startDate: Date, supervisor?: string }[]; // Roles held by member, with start dates
+    roleHistory?: { role: Role; startDate: Date, endDate: Date | "Current" }[]; // Optional for now
+    desiredRole?: Role; // Role written in parentheses in sheet
+    joinDate: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    
 }
 
 /**
