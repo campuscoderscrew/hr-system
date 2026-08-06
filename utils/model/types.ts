@@ -36,32 +36,32 @@ export type Role =
  */
 
 // One aspect's rating (ranges 1-5)
-export type ProfiencyRating = number | "X";
+export type ProficiencyRating = number | "X";
 
 // Front-End / Back-End / Design (Figma) / Version Control / Dev Ops
 // The sheet's total is derived from these five, so it is computed rather than stored
-export interface Profiency {
-    frontEnd?: ProfiencyRating;
-    backEnd?: ProfiencyRating;
-    design?: ProfiencyRating;
-    versionControl?: ProfiencyRating;
-    devOps?: ProfiencyRating;
+export interface Proficiency {
+    frontEnd?: ProficiencyRating;
+    backEnd?: ProficiencyRating;
+    design?: ProficiencyRating;
+    versionControl?: ProficiencyRating;
+    devOps?: ProficiencyRating;
 }
 
 // Aspects in the sheet's column order
-function proficiencyRatings(proficiency: Profiency): (ProfiencyRating | undefined)[] {
+function proficiencyRatings(proficiency: Proficiency): (ProficiencyRating | undefined)[] {
     const { frontEnd, backEnd, design, versionControl, devOps } = proficiency; // Destructuring
     return [frontEnd, backEnd, design, versionControl, devOps];
 }
 
 // "X" (not rated) and unset aspects both count as 0
-export function proficiencyTotal(proficiency: Profiency): number {
+export function proficiencyTotal(proficiency: Proficiency): number {
     return proficiencyRatings(proficiency).reduce<number>(
         (sum, rating) => sum + (typeof rating === "number" ? rating : 0), 0
     );
 }
 
-export function proficiencyToString(proficiency: Profiency): string {
+export function proficiencyToString(proficiency: Proficiency): string {
     const ratings = proficiencyRatings(proficiency).map((rating) => rating ?? "X");
     return `${ratings.join("-")} (${proficiencyTotal(proficiency)})`;
 }
@@ -103,7 +103,7 @@ export interface Membership {
     discord?: string;
     email: string;
     github?: string;
-    proficiency?: Profiency;
+    proficiency?: Proficiency;
     availability: Availability;
     role: Role;
     currentRoles: { role: Role; startDate: Date, supervisor?: string }[]; // Roles held by member, with start dates
