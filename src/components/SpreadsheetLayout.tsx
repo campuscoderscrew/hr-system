@@ -12,39 +12,110 @@ import type {
 import { proficiencyToString, availabilityToString } from "~/model/types";
 import { cn } from "~/utils";
 
+const EMPTY = "—";
+
+const COLUMNS = [
+  { key: "role", header: "Role" },
+  { key: "name", header: "Name" },
+  { key: "discord", header: "Discord" },
+  { key: "proficiency", header: "Proficiency" },
+  { key: "availability", header: "Availability" },
+  { key: "github", header: "GitHub" },
+  { key: "email", header: "Email" },
+  { key: "desiredRole", header: "Desired Role" },
+  { key: "supervisor", header: "Supervisor" },
+  { key: "startDate", header: "Start Date" },
+] as const;
+
+type ColumnKey = (typeof COLUMNS)[number]["key"];
+
+type MemberRow = Record<ColumnKey, string>;
+
+const text = (value?: string): string => (value && value.trim() ? value : EMPTY);
+
+// UTC: local formatting shifts these date-only values back a day.
+const formatDate = (date?: Date): string => {
+  if (!date) return EMPTY;
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime())
+    ? EMPTY
+    : parsed.toLocaleDateString(undefined, { timeZone: "UTC" });
+};
+
+const toMemberRow = (member: Membership, team: Team): MemberRow => {
+  const roleUnderLead = member.currentRoles.find(
+    (entry) => entry.supervisor === team.teamLead.name,
+  );
+  const currentRole = roleUnderLead ?? member.currentRoles[0];
+
+  return {
+    role: text(roleUnderLead?.role ?? member.role),
+    name: text(member.name),
+    discord: text(member.discord),
+    proficiency: member.proficiency
+      ? proficiencyToString(member.proficiency)
+      : EMPTY,
+    availability: member.availability
+      ? availabilityToString(member.availability)
+      : EMPTY,
+    github: text(member.github),
+    email: text(member.email),
+    desiredRole: text(member.desiredRole),
+    supervisor: text(currentRole?.supervisor),
+    startDate: formatDate(currentRole?.startDate),
+  };
+};
+
 const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
   const { className, team } = props;
 
   return (
     <div
       className={cn(
-        "flex flex-col divide-y",
         "bg-neutral-50 rounded-lg shadow-md overflow-hidden",
-        "[&_span]:px-4 [&_span]:py-2 [&_span]:-mx-[2px]",
         className,
       )}
     >
-      {/* Table header */}
-      <span className="bg-rose-100">{team.name}</span>
+      <div className="bg-rose-100 px-4 py-2 font-semibold">{team.name}</div>
 
-      <div className="flex gap-[2px] divide-x">
-        {team.members.map((member: Membership, index: number) => {
-          // Assumes roles and supervisors are of same length with corresponding entries
-          const supervisorIdx = member.currentRoles.findIndex((role) => role.supervisor === team.teamLead.name);
-          const currentRole = member.currentRoles[supervisorIdx]?.role;
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-left text-sm">
+          <thead>
+            <tr className="bg-neutral-200">
+              {COLUMNS.map((column) => (
+                <th
+                  key={column.key}
+                  scope="col"
+                  className="border border-neutral-300 px-4 py-2 font-semibold whitespace-nowrap"
+                >
+                  {column.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-          return (
-            <div className="flex flex-col divide-y">
-              <span>{currentRole}</span>
-              <span>{member.name}</span>
-              <span>{member.discord}</span>
-              {member.proficiency && <span>proficiency: {proficiencyToString(member.proficiency)}</span>}
-              {member.availability && <span>availability: {availabilityToString(member.availability)}</span>}
-              {member.github && <span>{member.github}</span>}
-              <span>{member.email}</span>
-            </div>
-          );
-        })}
+          <tbody>
+            {team.members.map((member: Membership, index: number) => {
+              const row = toMemberRow(member, team);
+
+              return (
+                <tr
+                  key={`member-${index}-${member.name}`}
+                  className="odd:bg-white even:bg-neutral-100"
+                >
+                  {COLUMNS.map((column) => (
+                    <td
+                      key={column.key}
+                      className="border border-neutral-300 px-4 py-2 whitespace-nowrap"
+                    >
+                      {row[column.key]}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

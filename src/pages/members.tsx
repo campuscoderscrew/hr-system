@@ -28,7 +28,7 @@ export default function Members() {
   return (
     <div className="">
       <NavBar />
-      <div className="h-screen grid place-items-center ">
+      <div className="mx-auto max-w-screen-2xl px-4 py-6 sm:px-6 lg:px-8">
         <OperationsSectorLayout sector={sector} />
       </div>
     </div>
