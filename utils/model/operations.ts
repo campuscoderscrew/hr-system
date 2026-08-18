@@ -26,7 +26,7 @@ function moveMember(
   newRole: Role,
   supervisor: string,
 ): Membership | null {
-  const member = members.find((member) => member.email === email);
+  const member = members.find((member) => member.emails.includes(email));
   if (!member) return null;
 
   member.currentRoles = [{ role: newRole, startDate: new Date(), supervisor }];
@@ -47,7 +47,7 @@ function addRole(
   newRole: Role,
   supervisor: string,
 ): Membership | null {
-  const member = members.find((member) => member.email === email);
+  const member = members.find((member) => member.emails.includes(email));
   if (!member) return null;
 
   member.currentRoles.push({
@@ -65,11 +65,11 @@ function addRole(
  * @param email The email of the member
  * @returns The member associated with the `email` if they exist and was deleted; `null` otherwise
  */
-function removeMember(
-  members: Membership[],
-  email: string,
-): Membership | null {
-  const memberIndex = members.findIndex((member) => member.email === email);
+function removeMember(members: Membership[], email: string): Membership | null {
+  const memberIndex = members.findIndex((member) =>
+    member.emails.includes(email),
+  );
+  
   if (memberIndex === -1) return null;
 
   const member = members.splice(memberIndex, 1)[0];
