@@ -38,9 +38,9 @@ const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
               <span>{currentRole}</span>
               <span>{member.name}</span>
               <span>{member.discord}</span>
-              {member.proficiency && <span>proficiency: {proficiencyToString(member.proficiency)}</span>}
-              {member.availability && <span>availability: {availabilityToString(member.availability)}</span>}
-              {member.github && <span>{member.github}</span>}
+              <span>proficiency: {proficiencyToString(member.proficiency)}</span>
+              <span>availability: {availabilityToString(member.availability)}</span>
+              <span>{member.github}</span>
               <span>{member.email}</span>
             </div>
           );

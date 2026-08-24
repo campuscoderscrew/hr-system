@@ -29,6 +29,7 @@ export type Role =
 | "Developer"
 | "Jr. Developer"
 | "Advisor"
+| "Assistant"
 | (string & {}) // Allows one-off titles (e.g. "Internal VP", "Jr. Analyst")
 
 /**
@@ -41,11 +42,11 @@ export type ProficiencyRating = number | "X";
 // Front-End / Back-End / Design (Figma) / Version Control / Dev Ops
 // The sheet's total is derived from these five, so it is computed rather than stored
 export interface Proficiency {
-    frontEnd?: ProficiencyRating;
-    backEnd?: ProficiencyRating;
-    design?: ProficiencyRating;
-    versionControl?: ProficiencyRating;
-    devOps?: ProficiencyRating;
+    frontEnd: ProficiencyRating;
+    backEnd: ProficiencyRating;
+    design: ProficiencyRating;
+    versionControl: ProficiencyRating;
+    devOps: ProficiencyRating;
 }
 
 // Aspects in the sheet's column order
@@ -89,7 +90,7 @@ export function availabilityToString(availability: Availability): string {
         case "lessThan":
             return `<${availability.max}`;
         case "hoursUnknown":
-            return "Hours Unknown"
+            return "-"
     }
 }
 
@@ -100,10 +101,10 @@ export function availabilityToString(availability: Availability): string {
 export interface Membership {
     id?: string; // Optional for now
     name: string;
-    discord?: string;
+    discord: string;
     email: string;
-    github?: string;
-    proficiency?: Proficiency;
+    github: string;
+    proficiency: Proficiency;
     availability: Availability;
     role: Role;
     currentRoles: { role: Role; startDate: Date, supervisor?: string }[]; // Roles held by member, with start dates
@@ -112,7 +113,6 @@ export interface Membership {
     joinDate: Date;
     createdAt: Date;
     updatedAt: Date;
-    
 }
 
 /**
