@@ -27,6 +27,28 @@ const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
       {/* Table header */}
       <span className="bg-purple-100">{team.name}</span>
 
+      {/* Development-team stats — only shown for development teams */}
+      {team.kind === "development" && (
+        <div className="flex gap-[2px] divide-x bg-purple-50">
+          {team.availabilityRule && (
+            <span>
+              Availability: {team.availabilityRule.comparator}{" "}
+              {team.availabilityRule.hours}
+            </span>
+          )}
+          {team.proficiency && (
+            <span>
+              {team.proficiency.kind.charAt(0).toUpperCase() +
+                team.proficiency.kind.slice(1)}{" "}
+              Team Proficiency: {team.proficiency.value}
+            </span>
+          )}
+          <span>Max developers: {team.maxDevelopers ?? "-"}</span>
+          <span>Tech Stack: {team.techStack?.join(", ") ?? "-"}</span>
+          <span>Website: {team.website ?? "-"}</span>
+        </div>
+      )}
+
       <div className="flex gap-[2px] divide-x">
         {team.members.map((member: Membership, index: number) => {
           // Assumes roles and supervisors are of same length with corresponding entries

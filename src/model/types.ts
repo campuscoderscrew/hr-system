@@ -116,6 +116,7 @@ export interface AvailabilityRule {
 // Team build (teams exist under cluster)
 export interface Team {
     name: string;
+    kind: "development" | "non-development";
     availabilityRule?: AvailabilityRule;
     proficiency?: TeamProficiencyStat;
     maxDevelopers?: number;
