@@ -140,7 +140,7 @@ export interface Membership {
     desiredRole?: Role; // Role written in parentheses in sheet
     currentRoles: { role: Role; startDate: Date, supervisor: string }[]; // Roles held by member, with start dates
     discord?: string;
-    email?: string;
+    emails: string[];
     github?: string;
     proficiency?: Profiency;
     availability?: Availability;
