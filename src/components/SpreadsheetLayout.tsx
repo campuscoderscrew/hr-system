@@ -25,7 +25,29 @@ const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
       )}
     >
       {/* Table header */}
-      <span className="bg-rose-100">{team.name}</span>
+      <span className="bg-purple-100">{team.name}</span>
+
+      {/* Development-team stats — only shown for development teams */}
+      {team.kind === "development" && (
+        <div className="flex gap-[2px] divide-x bg-purple-50">
+          {team.availabilityRule && (
+            <span>
+              Availability: {team.availabilityRule.comparator}{" "}
+              {team.availabilityRule.hours}
+            </span>
+          )}
+          {team.proficiency && (
+            <span>
+              {team.proficiency.kind.charAt(0).toUpperCase() +
+                team.proficiency.kind.slice(1)}{" "}
+              Team Proficiency: {team.proficiency.value}
+            </span>
+          )}
+          <span>Max developers: {team.maxDevelopers ?? "-"}</span>
+          <span>Tech Stack: {team.techStack?.join(", ") ?? "-"}</span>
+          <span>Website: {team.website ?? "-"}</span>
+        </div>
+      )}
 
       <div className="flex gap-[2px] divide-x">
         {team.members.map((member: Membership, index: number) => {
@@ -58,7 +80,7 @@ const DepartmentLayout = (props: {
   return (
     <div
       className={cn(
-        "p-4 flex flex-col gap-2 bg-yellow-300 rounded-xl",
+        "p-4 flex flex-col gap-2 bg-red-100 rounded-xl",
         className,
       )}
     >
@@ -78,9 +100,9 @@ const OperationsSectorLayout = (props: {
   const { className, sector } = props;
   return (
     <div
-      className={cn("p-4 flex flex-col gap-2 bg-black rounded-xl", className)}
+      className={cn("p-4 flex flex-col gap-2 bg-yellow-300 rounded-xl", className)}
     >
-      <span className="text-neutral-50 text-lg font-semibold">
+      <span className="text-lg font-semibold">
         {sector.name}
       </span>
 
