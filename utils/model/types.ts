@@ -17,19 +17,68 @@
 // PL = Primary (Team) Lead, SL = Secondary (Team) Lead, TL = Team Lead,
 // H = Head, M = Member.
 
-
+// Roles are exhaustive 
+// "Team Lead" encompasses the Primary Lead and Secondary Lead roles.
+// Jr./Sr. variants are not roles
 export type UserType = "ADMIN" | "MEMBER" | "GUEST";
 export type Role =
-| "PL"
-| "SL"
-| "TL"
-| "H"
-| "M"
-| "Head"
-| "Developer"
-| "Jr. Developer"
-| "Advisor"
-| (string & {}) // Allows one-off titles (e.g. "Internal VP", "Jr. Analyst")
+  // Executive
+  | "President"
+  | "Vice President"
+  | "Head"
+  // Team leadership
+  | "Primary Lead"
+  | "Secondary Lead"
+  | "Team Lead"
+  // Development Operations
+  | "Developer"
+  | "Designer"
+  | "QA Tester"
+  | "Product Manager"
+  // Internal Operations
+  | "Accountant"
+  | "Financial Analyst"
+  | "Fundraiser"
+  | "Resource Manager"
+  | "Analyst"
+  | "Auditor"
+  | "Human Resources Specialist"
+  // External Operations
+  | "Marketer"
+  | "Recruiter"
+  | "Public Relations Specialist"
+  // Other
+  | "Advisor"
+  | "M";
+
+
+  // Experience Level
+  export type ExperienceLevel = "Associate" | "Intermediate" | "Senior";
+
+  export function experienceLevelToString(level: ExperienceLevel): string {
+  if (level === "Associate") {
+    return "Assoc.";
+  } else if (level === "Intermediate") {
+    // Intermediate 
+    return "";
+  } else {
+    return "Sr.";
+  }
+}
+
+export function formatRole(role: Role, level?: ExperienceLevel): string {
+if (level === undefined) {
+    return role;
+}
+const prefix = experienceLevelToString(level);
+
+if (prefix === "") {
+    return role;
+  }
+
+  return prefix + " " + role;
+}
+
 
 /**
  * Proficiency
@@ -116,6 +165,7 @@ export interface AvailabilityRule {
 // Team build (teams exist under cluster)
 export interface Team {
     name: string;
+    kind: "development" | "non-development";
     availabilityRule?: AvailabilityRule;
     proficiency?: TeamProficiencyStat;
     maxDevelopers?: number;
