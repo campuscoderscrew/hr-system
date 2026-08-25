@@ -1,4 +1,5 @@
-import type { Membership, Role } from "./types";
+import type { Membership, Role, SupervisorRef } from "./types";
+import { currentPositions } from "./types";
 
 /**
  * Determines all cyclic supervisor relationships in linear time using Tarjan's
@@ -19,9 +20,11 @@ function getCycles(members: Membership[]): number[][] {
   const graph = new Map<number, number[]>();
   members.forEach((member, i) => {
     // Converts all edges into adjacency lists; non-existent emails are ignored
-    const edges = member.currentRoles.reduce<number[]>(
-      (accum, { supervisor }) => {
-        const index = memberEmailToIdx.get(supervisor);
+    const edges = currentPositions(member).reduce<number[]>(
+      (accum: number[], { supervisor }) => {
+        // Positions with no recorded supervisor contribute no edge
+        if (supervisor === undefined) return accum;
+        const index = memberEmailToIdx.get(supervisor[1]);
         if (index !== undefined) accum.push(index);
         return accum;
       },
@@ -120,12 +123,17 @@ function moveMember(
   members: Membership[],
   email: string,
   newRole: Role,
-  supervisor: string,
+  supervisor: SupervisorRef,
 ): Membership | null {
   const member = members.find((member) => member.emails.includes(email));
   if (!member) return null;
 
-  member.currentRoles = [{ role: newRole, startDate: new Date(), supervisor }];
+  // Close out every position currently held, then open the new one
+  const now = new Date();
+  currentPositions(member).forEach((position) => {
+    position.endDate = now;
+  });
+  member.positionHistory.push({ role: newRole, startDate: now, supervisor });
   return member;
 }
 
@@ -141,12 +149,12 @@ function addRole(
   members: Membership[],
   email: string,
   newRole: Role,
-  supervisor: string,
+  supervisor: SupervisorRef,
 ): Membership | null {
   const member = members.find((member) => member.emails.includes(email));
   if (!member) return null;
 
-  member.currentRoles.push({
+  member.positionHistory.push({
     role: newRole,
     startDate: new Date(),
     supervisor,

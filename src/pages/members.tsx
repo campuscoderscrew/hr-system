@@ -1,9 +1,18 @@
 import React from "react";
 
 import NavBar from "~/components/navbar";
-import { DepartmentLayout, OperationsSectorLayout } from "../components/SpreadsheetLayout";
-import type { Department, Membership, OperationsSector, Team } from "../../utils/model/types";
+import {
+  DepartmentLayout,
+  OperationsSectorLayout,
+} from "../components/SpreadsheetLayout";
+import type {
+  Department,
+  Membership,
+  OperationsSector,
+  Team,
+} from "../../utils/model/types";
 import { members } from "../../utils/model/data";
+import { currentPositions } from "../../utils/model/types";
 
 export default function Members() {
   const team: Team = {
@@ -15,14 +24,22 @@ export default function Members() {
     techStack: ["React", "TypeScript", "FastAPI"],
     website: "teamlemon.com",
     members: members,
-    teamLead: members.find((member) => member.role === "Team Lead")!,
+    teamLead: members.find((member) =>
+      currentPositions(member).some(
+        (position) => position.role === "Team Lead",
+      ),
+    )!,
   };
 
   const nonDevTeam: Team = {
     name: "Team NonDev",
     kind: "non-development",
     members: members,
-    teamLead: members.find((member) => member.role === "Team Lead")!,
+    teamLead: members.find((member) =>
+      currentPositions(member).some(
+        (position) => position.role === "Team Lead",
+      ),
+    )!,
   };
 
   const department = {
