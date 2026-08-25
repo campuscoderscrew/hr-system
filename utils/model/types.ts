@@ -1,9 +1,43 @@
 // Models the CCC Crew Formations [CREW-R] spreadsheet
 //
 // Organization
-// ├─ Board                (Advisory / Executive / Minor)
-// │  └─ OperationsSector  (Executive board only: Internal / External / Development)
-// │       └─ Department   (Analytics, HR, Finance, QA, ...)
+// ├─ Executive Board
+// ├─ Advisory Board
+// ├─ Minor Board
+// ├─ Development Operations Sector
+// │       └─ Development Department
+// |              └─ Caribbean Cluster
+// |                      └─ Team Angel
+// |                      └─ Team Whale
+// |                      └─ Team Shortfin
+// |                      └─ Team Blue
+// |              └─ Bering Cluster
+// |                      └─ Team Leopard
+// |                      └─ Team Mako
+// |                      └─ Team Hammerhead
+// |                      └─ Team Lemon
+// |                      └─ Team Cookiecutter
+// |                      └─ Team Zebra
+// |                      └─ Team Nurse
+// |                      └─ Team Silky
+// |              └─ Caspian Cluster
+// |              └─ Mediterranean Cluster
+// │       └─ Product Management Department
+// │       └─ Quality Assurance Department
+// ├─ Internal Operations Sector
+// │       └─ Human Resources Department
+// │       └─ Finance Department
+// |              └─ Accounting Team
+// |              └─ Stock Investment Team
+// │       └─ Resource Management Department
+// │       └─ Analytics Department
+// ├─ External Operations Sector
+// │       └─ Events Department
+// │       └─ Marketing Department
+// |              └─ Recruitment Team
+// |              └─ Graphic Design Team
+// |              └─ Public Relations Team
+
 // └─ Cluster              (Caribbean, Bering, ... — the developer membership)
 //    └─ Team              (Angel, Whale, Shortfin, ...)
 //
@@ -169,9 +203,7 @@ export type DepartmentNames =
   | "Events"
   // External Operations
   | "Marketing"
-  | "Recruitment"
-  | "Public Relations"
-  | "Graphic Design";
+  | "Events";
 
 export type TeamNames =
   // Development department
@@ -190,6 +222,9 @@ export type TeamNames =
   | "Accounting"
   | "Investment"
   // Graphic Design department
+  | "Graphic Design"
+  | "Recruitment"
+  | "Public Relations"
   | "Graphic Design";
 
 /**
