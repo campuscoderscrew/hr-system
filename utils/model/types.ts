@@ -319,7 +319,8 @@ export interface Cluster {
 export interface Department {
   name: string;
   abbreviation?: string; // Short form where sheet uses one
-  members: Membership[];
+  clusters: Cluster[];
+  teams: Team[];
 }
 
 export interface OperationsSector {
@@ -344,5 +345,5 @@ export type Board =
 
 export interface Organization {
   boards: Board[];
-  clusters: Cluster[];
+  sectors: OperationsSector[];
 }
