@@ -47,7 +47,7 @@ const CodeInput = (props: Props) => {
       {passcode.map((digit, i) => (
         <input
           ref={(ref) => (digitRefs.current[i] = ref)}
-          className="input min-w-0 aspect-square text-3xl text-center"
+          className="input min-w-0 aspect-square text-3xl text-center font-[Herculanum]"
           type="text"
           key={`digit-input-${i}`}
           value={digit}

@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-import NavBar from "~/components/navbar";
+import NavBar from "@src/components/navbar";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
-import { cn } from "~/utils";
-import CodeInput from "~/components/CodeInput";
+import { cn } from "@src/utils";
+import CodeInput from "@src/components/CodeInput";
 
 const emails = [{ email: "admin@gmail.com", username: "admin" }];
 
@@ -18,7 +18,7 @@ const users = [
 ];
 
 export default function ChangePasswordScreen() {
-  const [formProgress, setFormProgress] = useState(0);
+  const [formProgress, setFormProgress] = useState(1);
 
   // 2FA password sent to user's email when resetting password
   const PASSCODE_2FA_LENGTH = 6;
@@ -48,7 +48,7 @@ export default function ChangePasswordScreen() {
     // Direct `div` children
     "[&>div]:flex [&>div]:flex-col [&>div]:gap-2",
     // All `label` descendents
-    "[&_label]:block [&_label]:text-sm [&_label]:font-medium [&_label]:text-slate-700",
+    "[&_label]:text-slate-700 [&_label]:text-sm [&_label]:font-medium [&_label]:text-left ",
     // All `input` descendents
     "[&_input]:w-full [&_input]:px-4 [&_input]:py-3",
   );
@@ -80,17 +80,17 @@ export default function ChangePasswordScreen() {
           className={cn(
             "max-w-md w-full p-8",
             "flex flex-col gap-8",
-            "bg-white rounded-3xl shadow-xl",
+            "bg-white rounded-3xl shadow-xl text-center ",
           )}
         >
           {formProgress === 0 && (
             <>
-              <div className="text-center space-y-2">
+              <div className="space-y-2">
                 <h1 className="text-3xl font-semibold text-slate-900">
                   Forgot Password?
                 </h1>
                 <p className="text-sm text-slate-500 text-balanced">
-                  No worries. Enter your email address and username and we'll
+                  No worries. Enter your email address and username, and we'll
                   email you a code to reset your password.
                 </p>
               </div>
@@ -131,7 +131,7 @@ export default function ChangePasswordScreen() {
 
           {formProgress === 1 && (
             <>
-              <div className="text-center space-y-2">
+              <div className="space-y-2">
                 <h1 className="text-3xl font-semibold text-slate-900">
                   Check your Email
                 </h1>
@@ -165,7 +165,7 @@ export default function ChangePasswordScreen() {
 
           {formProgress === 2 && (
             <>
-              <div className="text-center space-y-2">
+              <div className="space-y-2">
                 <h1 className="text-3xl font-semibold text-slate-900">
                   Create new password
                 </h1>
