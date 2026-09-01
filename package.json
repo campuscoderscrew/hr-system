@@ -26,8 +26,10 @@
     "react": "^18.3.1",
     "react-curved-text": "^3.0.1",
     "react-dom": "^18.3.1",
+    "react-email": "^6.9.3",
     "react-router": "^7.1.5",
     "react-router-dom": "^7.18.1",
+    "resend": "^6.25.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

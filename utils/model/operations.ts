@@ -1,5 +1,5 @@
 import type { Membership, Role, SupervisorRef } from "./types";
-import { currentPositions } from "./types";
+import { currentPositions } from "./types.ts";
 
 /**
  * Determines all cyclic supervisor relationships in linear time using Tarjan's
