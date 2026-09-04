@@ -146,10 +146,6 @@ export default function ChangePasswordScreen() {
                 setPasscode={handlePasscode2FaChange}
               />
 
-              <button className={submitButtonClassName} type="submit">
-                Verify Code
-              </button>
-
               <p className="text-sm text-slate-500">
                 Didn't receive code? Check your spam mail or{" "}
                 <a

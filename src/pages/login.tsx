@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import NavBar from "~/components/navbar";
-import { cn } from "~/utils";
+import NavBar from "@src/components/navbar";
+import { cn } from "@src/utils";
 
 const users = [
   { username: "admin", password: "password123", userType: "ADMIN" },

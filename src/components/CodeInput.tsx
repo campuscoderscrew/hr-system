@@ -42,18 +42,43 @@ const CodeInput = (props: Props) => {
     }
   };
 
+  const handlePaste = (event: React.ClipboardEvent, index: number) => {
+    event.preventDefault()
+    let pastedText = event.clipboardData.getData("text")
+    if (!/^\d*$/.test(pastedText)) return; // Blocks non-numeric input
+
+    // Truncates extra characters
+    const trimmedText =
+      pastedText.length + index > numDigits
+        ? pastedText.slice(0, numDigits - index)
+        : pastedText;
+
+    const newPasscode = passcode;
+    for (let i = 0; i < trimmedText.length; i += 1) {
+      newPasscode[index + i] = trimmedText[i];
+    }
+
+    setPasscodeInternal(newPasscode);
+    props.setPasscode?.(newPasscode.join(""));
+
+    digitRefs.current[index + pastedText.length]?.focus();
+  };
+
   return (
     <div className="flex gap-2 *:shrink">
       {passcode.map((digit, i) => (
         <input
           ref={(ref) => (digitRefs.current[i] = ref)}
-          className="input min-w-0 aspect-square text-3xl text-center font-[Herculanum]"
+          className="input min-w-0 aspect-square text-3xl text-center"
           type="text"
           key={`digit-input-${i}`}
           value={digit}
           maxLength={1}
           onChange={(event) => handleChange(event.currentTarget.value, i)}
           onKeyUp={(event) => handleBackspaceAndEnter(event, i)}
+          onPaste={(event) =>
+            handlePaste(event, i)
+          }
         />
       ))}
     </div>

@@ -8,7 +8,8 @@ import './app.css';
 
 import Members from './pages/members.js';
 import LoginScreen from './pages/login.js';
-import ChangePasswordScreen from './pages/changePassword.js';
+import ChangePasswordScreen from './pages/ChangePassword.js';
+import EmailAuth from '../server/EmailAuth.js';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
       <Route path="members" element={<Members />} />
       <Route path="login" element={<LoginScreen />} />
       <Route path="change-password" element={<ChangePasswordScreen />} />
+      <Route path="email-test" element={<EmailAuth code={"123123"}/>} />
     </Routes>
   );
 }
