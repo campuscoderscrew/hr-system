@@ -9,7 +9,11 @@ import type {
   Role,
   Team,
 } from "../../utils/model/types";
-import { proficiencyToString, availabilityToString } from "../../utils/model/types";
+import {
+  proficiencyToString,
+  availabilityToString,
+  currentPositions,
+} from "../../utils/model/types";
 import { cn } from "../utils";
 
 const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
@@ -25,23 +29,59 @@ const TeamLayout = (props: { className?: ClassValue[]; team: Team }) => {
       )}
     >
       {/* Table header */}
-      <span className="bg-rose-100">{team.name}</span>
+      <span className="bg-purple-100">{team.name}</span>
+
+      {/* Development-team stats — only shown for development teams */}
+      {team.kind === "development" && (
+        <div className="flex gap-[2px] divide-x bg-purple-50">
+          {team.availabilityRule && (
+            <span>
+              Availability: {team.availabilityRule.comparator}{" "}
+              {team.availabilityRule.hours}
+            </span>
+          )}
+          {team.proficiency && (
+            <span>
+              {team.proficiency.kind.charAt(0).toUpperCase() +
+                team.proficiency.kind.slice(1)}{" "}
+              Team Proficiency: {team.proficiency.value}
+            </span>
+          )}
+          <span>Max developers: {team.maxDevelopers ?? "-"}</span>
+          <span>Tech Stack: {team.techStack?.join(", ") ?? "-"}</span>
+          <span>Website: {team.website ?? "-"}</span>
+        </div>
+      )}
 
       <div className="flex gap-[2px] divide-x">
         {team.members.map((member: Membership, index: number) => {
           // Assumes roles and supervisors are of same length with corresponding entries
-          const supervisorIdx = member.currentRoles.findIndex((role) => role.supervisor === team.teamLead.name);
-          const currentRole = member.currentRoles[supervisorIdx]?.role;
+          const positions = currentPositions(member);
+          const supervisorIdx = positions.findIndex(
+            (position) => position.supervisor?.[0] === team.teamLead.name,
+          );
+          const currentPosition = positions[supervisorIdx];
+          const currentRole = currentPosition?.role;
 
           return (
             <div className="flex flex-col divide-y">
               <span>{currentRole}</span>
               <span>{member.name}</span>
               <span>{member.discord}</span>
-              <span>proficiency: {proficiencyToString(member.proficiency)}</span>
-              <span>availability: {availabilityToString(member.availability)}</span>
-              <span>{member.github}</span>
-              <span>{member.email}</span>
+              {currentPosition?.proficiency && (
+                <span>
+                  proficiency:{" "}
+                  {proficiencyToString(currentPosition.proficiency)}
+                </span>
+              )}
+              {currentPosition?.availability && (
+                <span>
+                  availability:{" "}
+                  {availabilityToString(currentPosition.availability)}
+                </span>
+              )}
+              {member.github && <span>{member.github}</span>}
+              <span>{member.emails.join(", ")}</span>
             </div>
           );
         })}
@@ -57,10 +97,7 @@ const DepartmentLayout = (props: {
   const { className, department } = props;
   return (
     <div
-      className={cn(
-        "p-4 flex flex-col gap-2 bg-yellow-300 rounded-xl",
-        className,
-      )}
+      className={cn("p-4 flex flex-col gap-2 bg-red-100 rounded-xl", className)}
     >
       <span className="text-lg font-semibold">{department.name}</span>
 
@@ -78,11 +115,12 @@ const OperationsSectorLayout = (props: {
   const { className, sector } = props;
   return (
     <div
-      className={cn("p-4 flex flex-col gap-2 bg-black rounded-xl", className)}
+      className={cn(
+        "p-4 flex flex-col gap-2 bg-yellow-300 rounded-xl",
+        className,
+      )}
     >
-      <span className="text-neutral-50 text-lg font-semibold">
-        {sector.name}
-      </span>
+      <span className="text-lg font-semibold">{sector.name}</span>
 
       {sector.departments.map((department: Department, index: number) => (
         <DepartmentLayout
