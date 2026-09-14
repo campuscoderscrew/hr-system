@@ -1,12 +1,10 @@
 import {
   Body,
-  Button,
   CodeInline,
   Container,
   Head,
   Heading,
   Html,
-  Img,
   Preview,
   Section,
   Tailwind,

@@ -19,10 +19,12 @@
     "@react-router/node": "^7.1.5",
     "@react-router/serve": "^7.18.1",
     "@react-spring/web": "^9.7.5",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "isbot": "^5.1.44",
+    "jsonwebtoken": "^9.0.3",
     "react": "^18.3.1",
     "react-curved-text": "^3.0.1",
     "react-dom": "^18.3.1",
@@ -45,6 +47,7 @@
     "postcss": "^8.5.16",
     "react-router-devtools": "^1.0.0",
     "tailwindcss": "^4.1.4",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vite": "^8.1.3"
   }

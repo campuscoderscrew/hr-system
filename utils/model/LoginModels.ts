@@ -9,3 +9,9 @@ export interface Login {
 export interface LoginModel {
     logins: Login[];
 }
+
+export interface EmailCode {
+    email: string;
+    timestamp: Date;
+    code: string;
+}
