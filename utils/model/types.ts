@@ -43,6 +43,9 @@
 //
 // Clusters/Teams are separate from the board hierarchy
 
+// User type roles for LoginModel.ts
+export type UserType = "ADMIN" | "HR" | "MEMBER" | "GUEST";
+
 /**
  * Roles
  */
@@ -54,7 +57,6 @@
 // Roles are exhaustive
 // "Team Lead" encompasses the Primary Lead and Secondary Lead roles.
 // Jr./Sr. variants are not roles
-export type UserType = "ADMIN" | "MEMBER" | "GUEST";
 export type Role =
   // Executive
   | "President"
