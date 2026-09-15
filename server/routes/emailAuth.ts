@@ -17,15 +17,34 @@ router.get(
   "/:email/:code",
   (req: Request<{ email: string; code: string }>, res: Response) => {
     const { email, code } = req.params;
-    // activeEmailCodes.findIndex()
-    console.log(email, code);
+
+    // Checks for non-expired codes
+    let matchingCodes = [];
+    const currentDate = new Date();
+
+    for (let i = 0; i < activeEmailCodes.length; i++) {
+      const emailCode = activeEmailCodes[i];
+      const timeDiff = currentDate.getTime() - emailCode.timestamp.getTime();
+
+      // Code is expired; remove it
+      if (timeDiff > PASSCODE_VALID_DURATION) {
+        activeEmailCodes.splice(i, 1);
+        i--;
+      
+      } else if (emailCode.email === email && emailCode.code === code) {
+        matchingCodes = activeEmailCodes.splice(i, 1);
+        break;
+      }
+    }
+
+    res.status(200).json({correctCode: matchingCodes.length > 1});
   },
 );
 
 
 // Creates new email verification
 router.post(
-  "/:email/send-code",
+  "/send-code/:email",
   (req: Request<{ email: string }>, res: Response) => {
     const email = req.params.email;
 
@@ -44,12 +63,15 @@ router.post(
       code: emailCode,
     });
 
-    resend.emails.send({
-      from: "no-reply@campuscoderscrew.com",
-      to: email,
-      subject: "Email Verification Code",
-      react: EmailAuth({ code: emailCode }),
-    });
+    console.log(emailCode);
+    // resend.emails.send({
+    //   from: "no-reply@campuscoderscrew.com",
+    //   to: email,
+    //   subject: "Email Verification Code",
+    //   react: EmailAuth({ code: emailCode }),
+    // });
+
+    res.status(202).json({ sent: true });
   },
 );
 

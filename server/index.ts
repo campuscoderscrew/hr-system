@@ -1,4 +1,6 @@
 import express, { type Express } from "express";
+import cors from "cors";
+
 import membersRouter from './routes/members.ts';
 import emailAuthRouter from "./routes/emailAuth.ts";
 
@@ -6,6 +8,8 @@ const app: Express = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(cors())
+
 app.use('/members', membersRouter);
 app.use('/email-auth', emailAuthRouter);
 

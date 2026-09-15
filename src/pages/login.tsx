@@ -33,6 +33,13 @@ export default function LoginScreen() {
     setError("Username or password is incorrect.");
   };
 
+  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
+  };
+
   return (
     <div>
       <NavBar />
@@ -79,8 +86,10 @@ export default function LoginScreen() {
                 type="text"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
+                onKeyDown={handleEnter}
                 placeholder="Enter username"
                 required
+                autoFocus
               />
             </div>
 
@@ -93,6 +102,7 @@ export default function LoginScreen() {
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                onKeyDown={handleEnter}
                 placeholder="Enter password"
                 required
               />

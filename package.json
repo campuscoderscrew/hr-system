@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "server": "tsx server/index.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
@@ -21,6 +22,7 @@
     "@react-spring/web": "^9.7.5",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "isbot": "^5.1.44",
@@ -37,6 +39,7 @@
   "devDependencies": {
     "@react-router/dev": "^7.18.1",
     "@tailwindcss/vite": "^4.3.2",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/next": "^8.0.7",
     "@types/node": "^20.19.43",

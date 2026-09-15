@@ -8,7 +8,7 @@ import './app.css';
 
 import Members from './pages/members.js';
 import LoginScreen from './pages/login.js';
-import ChangePasswordScreen from './pages/ChangePassword.js';
+import ChangePasswordScreen from './pages/changePassword.js';
 import EmailAuth from '../server/EmailAuth.js';
 
 export default function App() {

@@ -18,7 +18,7 @@ const users = [
 ];
 
 export default function ChangePasswordScreen() {
-  const [formProgress, setFormProgress] = useState(1);
+  const [formProgress, setFormProgress] = useState(0);
 
   // 2FA password sent to user's email when resetting password
   const PASSCODE_2FA_LENGTH = 6;
@@ -31,14 +31,22 @@ export default function ChangePasswordScreen() {
   };
 
   const navigate = useNavigate();
-  const handleSendCode = (event: FormEvent<HTMLFormElement>) => {
+  const handleSendCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(event.currentTarget));
 
-    // const emailRecord = emails.find(({ email }) => email === formData.email);
-    // if (emailRecord === undefined) return;
+    const emailRecord = emails.find(({ email }) => email === formData.email);
+    if (emailRecord === undefined) return;
 
-    console.log(formData);
+    // Asks for a verification code
+    const response = await fetch(
+      `http://localhost:3000/email-auth/send-code/${formData.email}`,
+      {
+        method: "POST",
+      },
+    );
+    if (!response.ok) return;
+
     // Does not verify if the email is associated with an username for security
     setFormProgress(1);
   };
