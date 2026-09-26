@@ -1,7 +1,7 @@
 import express, { type Express, type Request, type Response } from "express";
 import session from "express-session";
 import { members } from "../utils/model/data";
-import { addRole, moveMember, removeMember } from "../utils/model/operations";
+import { addRole, moveMember, moveMemberToTeam, removeMember } from "../utils/model/operations";
 import { verifyCredentials, requireAuth } from "../utils/auth";
 
 const app: Express = express();
@@ -55,7 +55,7 @@ app.post("/members", requireAuth, (req: Request, res: Response) => {
   res.status(201).json(member);
 });
 
-// PUT move member to a new role (archives current role to history) (Protected)
+// PUT move member to a new role (archives current roles to history) (Protected)
 app.put(
   "/members/:email/move",
   requireAuth,
@@ -64,6 +64,23 @@ app.put(
     const { role, supervisor } = req.body;
 
     const updatedMember = moveMember(members, email, role, supervisor);
+    if (updatedMember) {
+      res.status(200).json(updatedMember);
+    } else {
+      res.status(400);
+    }
+  },
+);
+
+// PUT move member to a new role (archives SPECIFIED current role to history) (Protected)
+app.put(
+  "/members/:email/move-team",
+  requireAuth,
+  (req: Request<{ email: string }>, res: Response) => {
+    const email = req.params.email;
+    const { oldRole, role, supervisor } = req.body;
+
+    const updatedMember = moveMemberToTeam(members, email, oldRole, role, supervisor);
     if (updatedMember) {
       res.status(200).json(updatedMember);
     } else {
