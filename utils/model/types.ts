@@ -43,6 +43,9 @@
 //
 // Clusters/Teams are separate from the board hierarchy
 
+// User type roles for LoginModel.ts
+export type UserType = "ADMIN" | "HR" | "MEMBER" | "GUEST";
+
 /**
  * Roles
  */
@@ -54,7 +57,6 @@
 // Roles are exhaustive
 // "Team Lead" encompasses the Primary Lead and Secondary Lead roles.
 // Jr./Sr. variants are not roles
-export type UserType = "ADMIN" | "MEMBER" | "GUEST";
 export type Role =
   // Executive
   | "President"
@@ -118,16 +120,16 @@ export function formatRole(role: Role, level?: ExperienceLevel): string {
  * Proficiency
  */
 
-// One aspect's rating (ranges 1-4)
-export type ProfiencyRating = number | "X";
+// One aspect's rating (ranges 1-5)
+export type ProficiencyRating = number | "X";
 
 // Front-End / Back-End / Design (Figma) / Version Control / Dev Ops
 export interface Profiency {
-  frontEnd?: ProfiencyRating;
-  backEnd?: ProfiencyRating;
-  design?: ProfiencyRating;
-  versionControl?: ProfiencyRating;
-  devOps?: ProfiencyRating;
+  frontEnd?: ProficiencyRating;
+  backEnd?: ProficiencyRating;
+  design?: ProficiencyRating;
+  versionControl?: ProficiencyRating;
+  devOps?: ProficiencyRating;
   totalSum?: number;
 }
 

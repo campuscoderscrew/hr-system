@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import NavBar from "~/components/navbar";
 import {
@@ -11,10 +11,12 @@ import type {
   OperationsSector,
   Team,
 } from "../../utils/model/types";
-import { members } from "../../utils/model/data";
+import { members as initialMembers } from "../../utils/model/data";
 import { currentPositions } from "../../utils/model/types";
 
 export default function Members() {
+  const [appMembers, setAppMembers] = useState<Membership[]>(initialMembers);
+
   const team: Team = {
     name: "Team Lemon",
     kind: "development",
@@ -23,8 +25,8 @@ export default function Members() {
     maxDevelopers: 4,
     techStack: ["React", "TypeScript", "FastAPI"],
     website: "teamlemon.com",
-    members: members,
-    teamLead: members.find((member) =>
+    members: appMembers,
+    teamLead: appMembers.find((member) =>
       currentPositions(member).some(
         (position) => position.role === "Team Lead",
       ),
@@ -34,8 +36,8 @@ export default function Members() {
   const nonDevTeam: Team = {
     name: "Team NonDev",
     kind: "non-development",
-    members: members,
-    teamLead: members.find((member) =>
+    members: appMembers,
+    teamLead: appMembers.find((member) =>
       currentPositions(member).some(
         (position) => position.role === "Team Lead",
       ),
@@ -45,21 +47,49 @@ export default function Members() {
   const department = {
     name: "Development Department",
     abbreviation: "Dev",
-    members: members,
+    members: appMembers,
     teams: [team, nonDevTeam, team],
   } as Department;
 
   const sector = {
     name: "Development Operations",
     departments: [department, department],
-    leadership: members,
+    leadership: appMembers,
   } as OperationsSector;
+
+  const handleMoveTeamAPI = async (
+    email: string, 
+    oldRole: string, 
+    newRole: string, 
+    supervisor?: [string, string]
+  ) => {
+    try {
+      const response = await fetch(`/members/${email}/move-team`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldRole, newRole, supervisor })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      console.log("Database updated successfully");
+    } catch (error) {
+      console.error("Failed to update member in the database", error);
+      alert("Failed to save transfer to the database.");
+    }
+  };
 
   return (
     <div className="">
       <NavBar />
       <div className="h-screen grid place-items-center ">
-        <OperationsSectorLayout sector={sector} />
+        <OperationsSectorLayout 
+          sector={sector} 
+          members={appMembers}
+          setMembers={setAppMembers}
+          handleMoveTeamAPI={handleMoveTeamAPI}
+        />
       </div>
     </div>
   );

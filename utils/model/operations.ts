@@ -137,6 +137,25 @@ function moveMember(
   return member;
 }
 
+function moveMemberToTeam(
+  members: Membership[],
+  email: string,
+  oldRole: Role,
+  newRole: Role,
+  supervisor?: SupervisorRef,
+): Membership | null {
+  const member = members.find((member) => member.emails.includes(email));
+  if (!member) return null;
+
+  // Close out only the specified position
+  const now = new Date();
+  const oldPosition = currentPositions(member).find((position) => position.role === oldRole);
+  if (!oldPosition) return null;
+  oldPosition.endDate = now;
+  member.positionHistory.push({ role: newRole, startDate: now, supervisor });
+  return member;
+}
+
 /**
  * Adds a new role to a member without removing all existing roles.
  * @param members List of members in the model
@@ -180,4 +199,4 @@ function removeMember(members: Membership[], email: string): Membership | null {
   return member;
 }
 
-export { getCycles, addMember, moveMember, addRole, removeMember };
+export { getCycles, addMember, moveMember, moveMemberToTeam, addRole, removeMember };
