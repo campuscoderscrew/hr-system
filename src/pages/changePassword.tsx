@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { debounce } from "lodash";
 
 import NavBar from "@src/components/navbar";
 
@@ -8,6 +9,11 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 import { cn } from "@src/utils";
 import CodeInput from "@src/components/CodeInput";
+
+type UserAuth = {
+  username: string;
+  email: string;
+};
 
 const emails = [{ email: "admin@gmail.com", username: "admin" }];
 
@@ -18,25 +24,71 @@ const users = [
 ];
 
 export default function ChangePasswordScreen() {
-  const [formProgress, setFormProgress] = useState(0);
+  const [formProgress, setFormProgress] = useState(0); // Page of the form
+  const [userAuthForm, setUserAuthForm] = useState<UserAuth | undefined>(); // User credentials
 
   // 2FA password sent to user's email when resetting password
   const PASSCODE_2FA_LENGTH = 6;
   const [passcode2Fa, setPasscode2Fa] = useState("");
-  const handlePasscode2FaChange = (passcode: string) => {
-    setPasscode2Fa(passcode);
-    if (passcode.length === PASSCODE_2FA_LENGTH) {
-      setTimeout(() => setFormProgress(2), 1000);
-    }
+
+  /**
+   * Checks if the code matches with the email; blocks for 3 seconds to prevent spamming
+   * @param email The email to check with the server
+   * @param code The code sent to the email for verification
+   */
+  const debounceCheckCode = useRef(
+    debounce(async (email, passcode) => {
+      const response = await fetch(
+        `http://localhost:3000/email-auth/check-code`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: email, code: passcode }),
+        },
+      );
+      if (!response.ok) return;
+      const isCodeCorrect = (await response.json()).isCodeCorrect;
+      if (isCodeCorrect) moveToFormPage(3)
+    }, 3000),
+  ).current;
+  useEffect(() => {
+    return () => {
+      debounceCheckCode.cancel();
+    };
+  }, [debounceCheckCode]);
+
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  /**
+   * Moves to a form page and clears any errors
+   * @param i The index of the form page
+   */
+  const moveToFormPage = (i: number) => {
+    setFormProgress(i);
+    setError("");
   };
 
-  const navigate = useNavigate();
+  // Page 1 navigation
   const handleSendCode = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(event.currentTarget));
 
-    const emailRecord = emails.find(({ email }) => email === formData.email);
-    if (emailRecord === undefined) return;
+    const emailRecord = emails.find(
+      ({ username, email }) =>
+        username === formData.username && email === formData.email,
+    );
+    if (emailRecord === undefined) {
+      setError("Username or email is not correct.");
+      return;
+    }
+    setUserAuthForm({
+      username: String(formData.username),
+      email: String(formData.email),
+    });
 
     // Asks for a verification code
     const response = await fetch(
@@ -48,9 +100,20 @@ export default function ChangePasswordScreen() {
     if (!response.ok) return;
 
     // Does not verify if the email is associated with an username for security
-    setFormProgress(1);
+    moveToFormPage(1);
   };
 
+  // Page 2 navigation
+  const handlePasscode2FaChange = async (passcode: string) => {
+    setPasscode2Fa(passcode);
+
+    if (passcode.length !== PASSCODE_2FA_LENGTH) return;
+
+    // Checks verification code
+    debounceCheckCode(userAuthForm?.email, passcode); // Pings server every 3 seconds to prevent spamming
+  };
+
+  // Classnames
   const formClassName = cn(
     "flex flex-col gap-6 transition-[height] duration-300",
     // Direct `div` children
@@ -67,6 +130,7 @@ export default function ChangePasswordScreen() {
     "transition-colors duration-300 hover:bg-slate-700",
   );
 
+  // Subcomponents
   const BackToLoginButton = () => (
     <button
       className={cn(
@@ -128,6 +192,17 @@ export default function ChangePasswordScreen() {
                   />
                 </div>
 
+                {error && (
+                  <div
+                    className={cn(
+                      "px-4 py-3 bg-red-50 rounded-2xl border border-red-200",
+                      "text-sm text-red-700",
+                    )}
+                  >
+                    {error}
+                  </div>
+                )}
+
                 <button className={submitButtonClassName} type="submit">
                   Send Code
                 </button>
@@ -158,11 +233,11 @@ export default function ChangePasswordScreen() {
                 Didn't receive code? Check your spam mail or{" "}
                 <a
                   className="!text-ocean-light underline decoration-ocean-light cursor-pointer"
-                  onClick={() => setFormProgress(0)}
+                  onClick={() => moveToFormPage(0)}
                 >
                   try another email address
                 </a>
-                .{passcode2Fa}
+                .
               </p>
             </>
           )}
@@ -216,6 +291,19 @@ export default function ChangePasswordScreen() {
               </form>
 
               <BackToLoginButton />
+            </>
+          )}
+
+          {formProgress === 3 && (
+            <>
+              <div className="space-y-2">
+                <h1 className="text-3xl font-semibold text-slate-900">
+                  Success!
+                </h1>
+                <p className="text-sm text-slate-500 text-balanced">
+                  Your verification code was correct.
+                </p>
+              </div>
             </>
           )}
         </div>

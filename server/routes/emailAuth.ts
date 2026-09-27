@@ -13,34 +13,31 @@ const PASSCODE_VALID_DURATION = 300000; // 5 minutes in milliseconds
 const activeEmailCodes: EmailCode[] = [];
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-router.get(
-  "/:email/:code",
-  (req: Request<{ email: string; code: string }>, res: Response) => {
-    const { email, code } = req.params;
+router.post("/check-code", (req: Request, res: Response) => {
+  const email = req.body.email;
+  const code = req.body.code;
 
-    // Checks for non-expired codes
-    let matchingCodes = [];
-    const currentDate = new Date();
+  // Checks for non-expired codes
+  let matchingCodes: EmailCode[] = [];
+  const currentDate = new Date();
 
-    for (let i = 0; i < activeEmailCodes.length; i++) {
-      const emailCode = activeEmailCodes[i];
-      const timeDiff = currentDate.getTime() - emailCode.timestamp.getTime();
+  for (let i = 0; i < activeEmailCodes.length; i++) {
+    const emailCode = activeEmailCodes[i];
+    const timeDiff = currentDate.getTime() - emailCode.timestamp.getTime();
 
-      // Code is expired; remove it
-      if (timeDiff > PASSCODE_VALID_DURATION) {
-        activeEmailCodes.splice(i, 1);
-        i--;
-      
-      } else if (emailCode.email === email && emailCode.code === code) {
-        matchingCodes = activeEmailCodes.splice(i, 1);
-        break;
-      }
+    // Code is expired; remove it
+    if (timeDiff > PASSCODE_VALID_DURATION) {
+      activeEmailCodes.splice(i, 1);
+      i--;
+    } else if (emailCode.email === email && emailCode.code === code) {
+      matchingCodes = activeEmailCodes.splice(i, 1);
+      break;
     }
+  }
 
-    res.status(200).json({correctCode: matchingCodes.length > 1});
-  },
-);
 
+  res.status(200).json({ isCodeCorrect: matchingCodes.length > 0 });
+});
 
 // Creates new email verification
 router.post(
@@ -56,6 +53,7 @@ router.post(
     const emailCode = code
       .substring(code.length - PASSCODE_2FA_LENGTH)
       .padStart(PASSCODE_2FA_LENGTH);
+    console.log(`/send-code ${emailCode}`);
 
     activeEmailCodes.push({
       email,
@@ -63,15 +61,14 @@ router.post(
       code: emailCode,
     });
 
-    console.log(emailCode);
-    // resend.emails.send({
-    //   from: "no-reply@campuscoderscrew.com",
-    //   to: email,
-    //   subject: "Email Verification Code",
-    //   react: EmailAuth({ code: emailCode }),
-    // });
+    resend.emails.send({
+      from: "no-reply@campuscoderscrew.com",
+      to: email,
+      subject: "Email Verification Code",
+      react: EmailAuth({ code: emailCode }),
+    });
 
-    res.status(202).json({ sent: true });
+    res.status(200).json({ sent: true });
   },
 );
 
