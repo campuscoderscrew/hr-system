@@ -28,7 +28,6 @@ export const members: Membership[] = [
     createdAt: new Date("1970-01-01"),
     updatedAt: new Date("1970-01-01")
   },
-
   {
     name: "Jane Smith",
     positionHistory: [
