@@ -8,6 +8,7 @@ const app: Express = express();
 const PORT = 3000;
 ``
 app.use(express.json());
+app.use(cors())
 
 // Initialize express-session middleware
 app.use(
