@@ -44,18 +44,18 @@ export default function Members() {
     )!,
   };
 
-  const department = {
+  const department: Department = {
     name: "Development Department",
     abbreviation: "Dev",
     members: appMembers,
     teams: [team, nonDevTeam, team],
-  } as Department;
+  };
 
   const sector = {
     name: "Development Operations",
     departments: [department, department],
     leadership: appMembers,
-  } as OperationsSector;
+  };
 
   const handleMoveTeamAPI = async (
     email: string, 

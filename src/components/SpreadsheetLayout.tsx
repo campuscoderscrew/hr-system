@@ -16,7 +16,7 @@ import {
 } from "../../utils/model/types";
 import { cn } from "../utils";
 import { moveMemberToTeam } from "../../utils/model/operations";
-import { hasSubscribers } from "diagnostics_channel";
+// import { hasSubscribers } from "diagnostics_channel";
 
 const TeamLayout = (props: {
   className?: ClassValue[];
@@ -139,7 +139,7 @@ const TeamLayout = (props: {
 
           return (
             <div
-              key={`member-${member.emails[0]}-${index}`}
+              key={`member-${index}-${member.emails[0]}`}
               // Added cursor styles for drag UX
               className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
               // Makes the member card draggable and pack the payload
@@ -184,7 +184,7 @@ const TeamLayout = (props: {
 
 const DepartmentLayout = (props: {
   className?: ClassValue[];
-  department: Department | any;
+  department: Department;
   members: Membership[];
   setMembers: (members: Membership[]) => void;
   handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
@@ -197,7 +197,7 @@ const DepartmentLayout = (props: {
     >
       <span className="text-lg font-semibold">{department.name}</span>
 
-      {department.teams.map((team: Team, index: number) => (
+      {department.teams?.map((team: Team, index: number) => (
         <TeamLayout 
           key={`team-${index}-${team.name}`} 
           team={team} 
@@ -207,13 +207,15 @@ const DepartmentLayout = (props: {
           handleMoveTeamAPI={handleMoveTeamAPI}
         />
       ))}
+
+      {/* TODO: W38.1.2 */}
     </div>
   );
 };
 
 const OperationsSectorLayout = (props: {
   className?: ClassValue[];
-  sector: OperationsSector | any;
+  sector: OperationsSector;
   members: Membership[];
   setMembers: (members: Membership[]) => void;
   handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;

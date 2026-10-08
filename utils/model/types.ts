@@ -322,6 +322,13 @@ export interface Department {
   name: string;
   abbreviation?: string; // Short form where sheet uses one
   members: Membership[];
+
+  // A department is either has either teams directly or teams under clusters.
+  // Only the `teams` xor the `clusters` property will be defined; the other will be `null`.
+  // For syntaxic sugar, any time the teams or clusters need to be retrieved, we can use
+  // `department.teams?.map` and `department.clusters?.map` for easy rendering
+  teams?: Team[];
+  clusters?: Cluster[];
 }
 
 export interface OperationsSector {
