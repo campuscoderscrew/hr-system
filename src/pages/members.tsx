@@ -45,13 +45,13 @@ export default function Members() {
   };
 
   const department: Department = {
-    name: "Development Department",
+    name: "Development",
     abbreviation: "Dev",
     members: appMembers,
     teams: [team, nonDevTeam, team],
   };
 
-  const sector = {
+  const sector: OperationsSector = {
     name: "Development Operations",
     departments: [department, department],
     leadership: appMembers,

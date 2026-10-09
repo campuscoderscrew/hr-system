@@ -132,7 +132,7 @@ const TeamLayout = (props: {
           // Assumes roles and supervisors are of same length with corresponding entries
           const positions = currentPositions(member);
           const supervisorIdx = positions.findIndex(
-            (position) => position.supervisor?.[0] === team.teamLead.name,
+            (position) => position.supervisor?.[0] === team.teamLead?.name,
           );
           const currentPosition = positions[supervisorIdx];
           const currentRole = currentPosition?.role;

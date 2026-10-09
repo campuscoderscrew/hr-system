@@ -89,6 +89,12 @@ export type Role =
   | "Advisor"
   | "M";
 
+export function isTeamLead(role: Role) {
+  return (
+    role === "Primary Lead" || role === "Secondary Lead" || role === "Team Lead"
+  );
+}
+
 // Experience Level
 export type ExperienceLevel = "Associate" | "Intermediate" | "Senior";
 
@@ -303,7 +309,7 @@ export interface Team {
   techStack?: string[];
   website?: string;
   members: Membership[];
-  teamLead: Membership;
+  teamLead?: Membership;
 }
 
 // Cluster build (contains multiple teams)
@@ -319,7 +325,7 @@ export interface Cluster {
  */
 
 export interface Department {
-  name: string;
+  name: DepartmentNames;
   abbreviation?: string; // Short form where sheet uses one
   members: Membership[];
 
@@ -332,7 +338,7 @@ export interface Department {
 }
 
 export interface OperationsSector {
-  name: string;
+  name: SectorNames;
   leadership: Membership[];
   departments: Department[];
 }
