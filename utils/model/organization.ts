@@ -301,23 +301,3 @@ export function buildOrganization(members: Membership[]): OperationsSector[] {
   );
   return sectors;
 }
-
-// Debugging
-const operationSectors = buildOrganization(members);
-
-for (const sector of operationSectors) {
-  console.log(sector.name);
-  for (const department of sector.departments) {
-    console.log("\t", department.name);
-    for (const cluster of department.clusters ?? []) {
-      console.log("\t\t", cluster.name, cluster.teams);
-    }
-
-    for (const team of department.teams ?? []) {
-      console.log("\t\t", team.name, team.teamLead?.name);
-      for (const member of team.members) {
-        console.log("\t\t\t", member.name)
-      }
-    }
-  }
-}
