@@ -39,17 +39,20 @@ export default function Members() {
     <div>
       <NavBar />
       <div className="h-screen grid place-items-center ">
-        {orgTree.map((sector, i) => (
-          <OperationsSectorLayout
-            key={`sector-${sector}-${i}`}
-            sector={sector}
-            members={appMembers}
-            // Uses prop drilling for convenience and readability
-            // OperationsSectorsLayouts down to TeamsLayouts will have this prop
-            onMembersChange={setAppMembers}
-            handleMoveTeamAPI={handleMoveTeamAPI}
-          />
-        ))}
+        {orgTree.map((sector, i) => {
+          console.log(sector.name);
+          return (
+            <OperationsSectorLayout
+              key={`sector-${sector}-${i}`}
+              sector={sector}
+              members={appMembers}
+              // Uses prop drilling for convenience and readability
+              // OperationsSectorsLayouts down to TeamsLayouts will have this prop
+              onMembersChange={setAppMembers}
+              handleMoveTeamAPI={handleMoveTeamAPI}
+            />
+          );
+        })}
       </div>
     </div>
   );
