@@ -9,6 +9,7 @@ import type {
   Role,
   Team,
 } from "../../utils/model/types";
+
 import {
   proficiencyToString,
   availabilityToString,
@@ -16,17 +17,22 @@ import {
 } from "../../utils/model/types";
 import { cn } from "../utils";
 import { moveMemberToTeam } from "../../utils/model/operations";
-import { hasSubscribers } from "diagnostics_channel";
+// import { hasSubscribers } from "diagnostics_channel";
 
 const TeamLayout = (props: {
   className?: ClassValue[];
   team: Team;
   departmentName: string;
   members: Membership[];
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
+  onMembersChange: (members: Membership[]) => void;
+  handleMoveTeamAPI: (
+    email: string,
+    oldRole: string,
+    newRole: string,
+    supervisor?: [string, string],
+  ) => Promise<void>;
 }) => {
-  const { className, team, departmentName, members, setMembers } = props;
+  const { className, team, departmentName, members, onMembersChange } = props;
 
   return (
     <div
@@ -43,38 +49,51 @@ const TeamLayout = (props: {
         e.preventDefault();
         const payloadStr = e.dataTransfer.getData("application/json");
         if (!payloadStr) return;
-        
+
         const payload = JSON.parse(payloadStr);
 
         // 1. Guard against duplicate positions (already on the team)
-        const isAlreadyOnTeam = team.members.some(m => m.emails.includes(payload.email));
+        const isAlreadyOnTeam = team.members.some((m) =>
+          m.emails.includes(payload.email),
+        );
         if (isAlreadyOnTeam) {
           alert("This member is already on the destination team.");
           return;
         }
 
         // 2. Guard against board members joining development teams
-        const isBoardMember = payload.oldRole === "President" || payload.oldRole === "Vice President";
+        const isBoardMember =
+          payload.oldRole === "President" ||
+          payload.oldRole === "Vice President";
         if (isBoardMember && departmentName === "Development") {
-          alert("Board-level roles cannot be transferred to a development team.");
+          alert(
+            "Board-level roles cannot be transferred to a development team.",
+          );
           return;
         }
 
         // 3. Guard against moving a team lead (decided to block to prevent orphan teams)
         // Assuming you pass `isTeamLead` in the drag payload, or look it up here
         if (payload.isTeamLead) {
-          alert("Cannot move a team lead. Reassign the team lead position first.");
+          alert(
+            "Cannot move a team lead. Reassign the team lead position first.",
+          );
           return;
         }
 
-        console.log("Incoming transfer request:", payload, "to team:", team.name);
-        
+        console.log(
+          "Incoming transfer request:",
+          payload,
+          "to team:",
+          team.name,
+        );
+
         // 4. Find the actual member and position objects from your global state
-        const member = members.find(m => m.emails.includes(payload.email));
+        const member = members.find((m) => m.emails.includes(payload.email));
         if (!member) return;
 
         const positions = currentPositions(member);
-        const fromPosition = positions.find(p => p.role === payload.oldRole);
+        const fromPosition = positions.find((p) => p.role === payload.oldRole);
         if (!fromPosition) return;
 
         // 5. Construct the destination object
@@ -84,8 +103,8 @@ const TeamLayout = (props: {
         };
 
         // 6. Fix scope for newSupervisor
-        const newSupervisor = team.teamLead 
-          ? [team.teamLead.name, team.teamLead.emails[0]] as [string, string]
+        const newSupervisor = team.teamLead
+          ? ([team.teamLead.name, team.teamLead.emails[0]] as [string, string])
           : undefined;
 
         // 7. Copy the array so React knows to re-render, then apply the mutation
@@ -95,11 +114,11 @@ const TeamLayout = (props: {
           payload.email,
           payload.oldRole,
           payload.oldRole,
-          newSupervisor
+          newSupervisor,
         );
 
         // 8. Push the new array into React state
-        setMembers(nextMembers);
+        onMembersChange(nextMembers);
       }}
     >
       {/* Table header */}
@@ -132,14 +151,14 @@ const TeamLayout = (props: {
           // Assumes roles and supervisors are of same length with corresponding entries
           const positions = currentPositions(member);
           const supervisorIdx = positions.findIndex(
-            (position) => position.supervisor?.[0] === team.teamLead.name,
+            (position) => position.supervisor?.[0] === team.teamLead?.name,
           );
           const currentPosition = positions[supervisorIdx];
           const currentRole = currentPosition?.role;
 
           return (
             <div
-              key={`member-${member.emails[0]}-${index}`}
+              key={`member-${index}-${member.emails[0]}`}
               // Added cursor styles for drag UX
               className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
               // Makes the member card draggable and pack the payload
@@ -153,7 +172,7 @@ const TeamLayout = (props: {
                     oldRole: currentRole,
                     sourceDepartment: departmentName,
                     isTeamLead: isTeamLead,
-                  })
+                  }),
                 );
               }}
             >
@@ -184,26 +203,32 @@ const TeamLayout = (props: {
 
 const DepartmentLayout = (props: {
   className?: ClassValue[];
-  department: Department | any;
+  department: Department;
   members: Membership[];
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
+  onMembersChange: (members: Membership[]) => void;
+  handleMoveTeamAPI: (
+    email: string,
+    oldRole: string,
+    newRole: string,
+    supervisor?: [string, string],
+  ) => Promise<void>;
 }) => {
-  const { className, department, members, setMembers, handleMoveTeamAPI } = props;
-  
+  const { className, department, members, onMembersChange, handleMoveTeamAPI } =
+    props;
+
   return (
     <div
       className={cn("p-4 flex flex-col gap-2 bg-red-100 rounded-xl", className)}
     >
       <span className="text-lg font-semibold">{department.name}</span>
 
-      {department.teams.map((team: Team, index: number) => (
-        <TeamLayout 
-          key={`team-${index}-${team.name}`} 
-          team={team} 
-          departmentName={department.name} 
+      {department.teams?.map((team: Team, index: number) => (
+        <TeamLayout
+          key={`team-${index}-${team.name}`}
+          team={team}
+          departmentName={department.name}
           members={members}
-          setMembers={setMembers}
+          onMembersChange={onMembersChange}
           handleMoveTeamAPI={handleMoveTeamAPI}
         />
       ))}
@@ -213,12 +238,18 @@ const DepartmentLayout = (props: {
 
 const OperationsSectorLayout = (props: {
   className?: ClassValue[];
-  sector: OperationsSector | any;
+  sector: OperationsSector;
   members: Membership[];
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
+  onMembersChange: (members: Membership[]) => void;
+  handleMoveTeamAPI: (
+    email: string,
+    oldRole: string,
+    newRole: string,
+    supervisor?: [string, string],
+  ) => Promise<void>;
 }) => {
-  const { className, sector, members, setMembers, handleMoveTeamAPI } = props;
+  const { className, sector, members, onMembersChange, handleMoveTeamAPI } =
+    props;
   return (
     <div
       className={cn(
@@ -233,7 +264,7 @@ const OperationsSectorLayout = (props: {
           key={`department-${index}-${department.name}`}
           department={department}
           members={members}
-          setMembers={setMembers}
+          onMembersChange={onMembersChange}
           handleMoveTeamAPI={handleMoveTeamAPI}
         />
       ))}
