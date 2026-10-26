@@ -16,7 +16,6 @@ import {
 } from "../../utils/model/types";
 import { cn } from "../utils";
 import { moveMemberToTeam } from "../../utils/model/operations";
-import { hasSubscribers } from "diagnostics_channel";
 
 const TeamLayout = (props: {
   className?: ClassValue[];
@@ -25,8 +24,9 @@ const TeamLayout = (props: {
   members: Membership[];
   setMembers: (members: Membership[]) => void;
   handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
+  onRequestDelete: (member: Membership) => void;
 }) => {
-  const { className, team, departmentName, members, setMembers } = props;
+  const { className, team, departmentName, members, setMembers, onRequestDelete } = props;
 
   return (
     <div
@@ -132,7 +132,7 @@ const TeamLayout = (props: {
           // Assumes roles and supervisors are of same length with corresponding entries
           const positions = currentPositions(member);
           const supervisorIdx = positions.findIndex(
-            (position) => position.supervisor?.[0] === team.teamLead.name,
+            (position) => position.supervisor?.[0] === team.teamLead?.name,
           );
           const currentPosition = positions[supervisorIdx];
           const currentRole = currentPosition?.role;
@@ -140,40 +140,49 @@ const TeamLayout = (props: {
           return (
             <div
               key={`member-${member.emails[0]}-${index}`}
-              // Added cursor styles for drag UX
-              className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
-              // Makes the member card draggable and pack the payload
-              draggable={true}
-              onDragStart={(e) => {
-                const isTeamLead = member.name === team.teamLead?.name;
-                e.dataTransfer.setData(
-                  "application/json",
-                  JSON.stringify({
-                    email: member.emails[0],
-                    oldRole: currentRole,
-                    sourceDepartment: departmentName,
-                    isTeamLead: isTeamLead,
-                  })
-                );
-              }}
+              className="relative flex"
             >
-              <span>{currentRole}</span>
-              <span>{member.name}</span>
-              <span>{member.discord}</span>
-              {currentPosition?.proficiency && (
-                <span>
-                  proficiency:{" "}
-                  {proficiencyToString(currentPosition.proficiency)}
-                </span>
-              )}
-              {currentPosition?.availability && (
-                <span>
-                  availability:{" "}
-                  {availabilityToString(currentPosition.availability)}
-                </span>
-              )}
-              {member.github && <span>{member.github}</span>}
-              <span>{member.emails.join(", ")}</span>
+              <div
+                className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
+                draggable={true}
+                onDragStart={(e) => {
+                  const isTeamLead = member.name === team.teamLead?.name;
+                  e.dataTransfer.setData(
+                    "application/json",
+                    JSON.stringify({
+                      email: member.emails[0],
+                      oldRole: currentRole,
+                      sourceDepartment: departmentName,
+                      isTeamLead: isTeamLead,
+                    })
+                  );
+                }}
+              >
+                <span>{currentRole}</span>
+                <span>{member.name}</span>
+                <span>{member.discord}</span>
+                {currentPosition?.proficiency && (
+                  <span>
+                    proficiency: {proficiencyToString(currentPosition.proficiency)}
+                  </span>
+                )}
+                {currentPosition?.availability && (
+                  <span>
+                    availability: {availabilityToString(currentPosition.availability)}
+                  </span>
+                )}
+                {member.github && <span>{member.github}</span>}
+                <span>{member.emails.join(", ")}</span>
+              </div>
+
+              <button
+                type="button"
+                aria-label={`Delete ${member.name}`}
+                onClick={() => onRequestDelete(member)}
+                className="absolute right-1 top-1 rounded p-1 text-neutral-400 opacity-60 hover:bg-red-50 hover:text-red-600 hover:opacity-100 focus:bg-red-50 focus:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+              >
+                <i className="fa-solid fa-trash text-xs" aria-hidden="true" />
+              </button>
             </div>
           );
         })}
@@ -188,8 +197,9 @@ const DepartmentLayout = (props: {
   members: Membership[];
   setMembers: (members: Membership[]) => void;
   handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
+  onRequestDelete: (member: Membership) => void;
 }) => {
-  const { className, department, members, setMembers, handleMoveTeamAPI } = props;
+  const { className, department, members, setMembers, handleMoveTeamAPI, onRequestDelete } = props;
   
   return (
     <div
@@ -198,13 +208,14 @@ const DepartmentLayout = (props: {
       <span className="text-lg font-semibold">{department.name}</span>
 
       {department.teams.map((team: Team, index: number) => (
-        <TeamLayout 
+        <TeamLayout
           key={`team-${index}-${team.name}`} 
           team={team} 
           departmentName={department.name} 
           members={members}
           setMembers={setMembers}
           handleMoveTeamAPI={handleMoveTeamAPI}
+          onRequestDelete={onRequestDelete}
         />
       ))}
     </div>
@@ -217,8 +228,9 @@ const OperationsSectorLayout = (props: {
   members: Membership[];
   setMembers: (members: Membership[]) => void;
   handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
+  onRequestDelete: (member: Membership) => void;
 }) => {
-  const { className, sector, members, setMembers, handleMoveTeamAPI } = props;
+  const { className, sector, members, setMembers, handleMoveTeamAPI, onRequestDelete } = props;
   return (
     <div
       className={cn(
@@ -235,6 +247,7 @@ const OperationsSectorLayout = (props: {
           members={members}
           setMembers={setMembers}
           handleMoveTeamAPI={handleMoveTeamAPI}
+          onRequestDelete={onRequestDelete}
         />
       ))}
     </div>
