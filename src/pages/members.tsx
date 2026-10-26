@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import NavBar from "~/components/navbar";
+import NavBar from "@src/components/navbar";
 import {
   DepartmentLayout,
   OperationsSectorLayout,
