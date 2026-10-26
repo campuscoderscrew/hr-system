@@ -1,9 +1,9 @@
 import type { UserType } from "./types";
 
 export interface Login {
-    Username: string;
-    Password: string;
-    UserType: UserType;
+    username: string;
+    password: string;
+    userType: UserType;
 }
 
 export interface LoginModel {

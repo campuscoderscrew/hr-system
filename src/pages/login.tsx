@@ -2,12 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import NavBar from "@src/components/navbar";
 import { cn } from "@src/utils";
+import type { Login } from "@utils/model/LoginModels";
 
-const users = [
-  { username: "admin", password: "password123", userType: "ADMIN" },
-  { username: "user1", password: "secret", userType: "MEMBER" },
-  { username: "6", password: "7", userType: "ADMIN" },
-];
+import { user_logins } from "@utils/model/data";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
@@ -23,7 +20,7 @@ export default function LoginScreen() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const user = users.find((item) => item.username === username.trim());
+    const user = user_logins.find((item) => item.username === username.trim());
     if (user && user.password === password) {
       setError("");
       navigate("/members");

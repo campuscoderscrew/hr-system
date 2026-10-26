@@ -14,13 +14,13 @@ declare module "express-session" {
 
 // Credential Verifier Function
 export function verifyCredentials(credentials: Login): boolean {
-    const { Username, Password, UserType } = credentials;
+    const { username, password, userType } = credentials;
 
     // Admin check
     // For now, we are using a hardcoded password check for demonstration
-    const isAdmin = Username === "admin" && Password === "supersecret" && UserType === "ADMIN";
+    const isAdmin = username === "admin" && password === "supersecret" && userType === "ADMIN";
     // HR check
-    const isHR = Username === "hr_user" && Password === "hrsecret" && UserType === "HR";
+    const isHR = username === "hr_user" && password === "hrsecret" && userType === "HR";
 
     return isAdmin || isHR;
 }
