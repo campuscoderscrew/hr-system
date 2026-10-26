@@ -276,6 +276,54 @@ function removeMemberDeep(
   };
 }
 
+// Profile fields a member edit may change. `positionHistory` is deliberately
+// absent: history is append-only and changes through moveMember / addRole.
+type MemberEdits = Partial<
+  Pick<Membership, "name" | "emails" | "discord" | "github" | "desiredRoles">
+>;
+
+/**
+ * Edits a member's profile fields and keeps supervisor references to them in sync.
+ *
+ * A `SupervisorRef` is a denormalized [name, primary email] copy (see types.ts),
+ * so a rename or primary-email change would leave every position naming this
+ * member as supervisor pointing at someone who no longer exists. Every such
+ * ref is rewritten, historical ones included: unlike a delete, the supervisor
+ * is still the same person, so correcting their name does not falsify history.
+ *
+ * Mutates the member and the affected positions in place, like the other operations.
+ * @param members List of members in the model
+ * @param email Any email of the member
+ * @param edits The fields to change; fields not present are left alone
+ * @returns The updated member and how many supervisor refs were rewritten; `null` if no member has `email`
+ */
+function updateMember(
+  members: Membership[],
+  email: string,
+  edits: MemberEdits,
+): { updated: Membership; updatedReferences: number } | null {
+  const member = members.find((member) => member.emails.includes(email));
+  if (!member) return null;
+
+  // Audit BEFORE editing, while the member's old emails still match their refs
+  const references = findReferencesTo(members, email);
+
+  Object.assign(member, edits);
+  member.updatedAt = new Date();
+
+  const [name, primaryEmail] = [member.name, member.emails[0]];
+  const stale = references.filter(
+    ({ position }) =>
+      position.supervisor?.[0] !== name || position.supervisor?.[1] !== primaryEmail,
+  );
+  // A fresh tuple per position, so no two positions share one mutable array
+  stale.forEach(({ position }) => {
+    position.supervisor = [name, primaryEmail];
+  });
+
+  return { updated: member, updatedReferences: stale.length };
+}
+
 export {
   getCycles,
   addMember,
@@ -285,4 +333,6 @@ export {
   removeMember,
   findReferencesTo,
   removeMemberDeep,
+  updateMember,
 };
+export type { MemberEdits };
