@@ -10,15 +10,13 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-notable: "Notable", sans-serif;
   --font-neuton: "Neuton";
-}
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+  --color-ocean-light: hsl(204, 90%, 25%);
+  --color-ocean-dark: hsl(204, 98%, 15%);
+  --color-sky-light: hsl(195, 80%, 90%);
+  --color-sky-dark: hsl(190, 85%, 80%);
+  --color-sand-light: hsl(47, 80%, 95%);
+  --color-sand-dark: hsl(47, 60%, 90%);
 }
 
 .font-notable {
@@ -27,4 +25,14 @@ body {
 
 .font-neuton {
   font-family: var(--font-neuton);
+}
+
+.input {
+  @apply bg-slate-50 rounded-2xl border-2 border-slate-300
+    text-slate-900 placeholder:text-slate-500 
+    transition-colors duration-300;
+}
+
+.input:focus {
+  @apply border-sky-dark outline-none ring-2 ring-sky-light;
 }
