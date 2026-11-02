@@ -89,6 +89,12 @@ export type Role =
   | "Advisor"
   | "M";
 
+export function isTeamLead(role: Role) {
+  return (
+    role === "Primary Lead" || role === "Secondary Lead" || role === "Team Lead"
+  );
+}
+
 // Experience Level
 export type ExperienceLevel = "Associate" | "Intermediate" | "Senior";
 
@@ -303,7 +309,7 @@ export interface Team {
   techStack?: string[];
   website?: string;
   members: Membership[];
-  teamLead: Membership;
+  teamLead?: Membership;
 }
 
 // Cluster build (contains multiple teams)
@@ -319,13 +325,20 @@ export interface Cluster {
  */
 
 export interface Department {
-  name: string;
+  name: DepartmentNames;
   abbreviation?: string; // Short form where sheet uses one
   members: Membership[];
+
+  // A department is either has either teams directly or teams under clusters.
+  // Only the `teams` xor the `clusters` property will be defined; the other will be `null`.
+  // For syntaxic sugar, any time the teams or clusters need to be retrieved, we can use
+  // `department.teams?.map` and `department.clusters?.map` for easy rendering
+  teams?: Team[];
+  clusters?: Cluster[];
 }
 
 export interface OperationsSector {
-  name: string;
+  name: SectorNames;
   leadership: Membership[];
   departments: Department[];
 }

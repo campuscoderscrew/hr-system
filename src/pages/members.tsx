@@ -1,18 +1,10 @@
-import React, { useState } from "react";
+import React, { createContext, useMemo, useState } from "react";
 
 import NavBar from "@src/components/navbar";
-import {
-  DepartmentLayout,
-  OperationsSectorLayout,
-} from "../components/SpreadsheetLayout";
-import type {
-  Department,
-  Membership,
-  OperationsSector,
-  Team,
-} from "../../utils/model/types";
+import { OperationsSectorLayout } from "../components/SpreadsheetLayout";
+import type { Membership } from "../../utils/model/types";
 import { members as initialMembers } from "../../utils/model/data";
-import { currentPositions } from "../../utils/model/types";
+import { buildOrganization } from "@utils/model/organization";
 
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { removeMemberDeep } from "../../utils/model/operations";
@@ -40,6 +32,10 @@ function describeTenure(member: Membership): string {
 }
 
 export default function Members() {
+  const [appMembers, setAppMembers] = useState<Membership[]>(
+    Array.from(initialMembers),
+  );
+  const orgTree = useMemo(() => buildOrganization(appMembers), [appMembers]);
   const [appMembers, setAppMembers] = useState<Membership[]>(initialMembers);
 
   const [pendingDelete, setPendingDelete] = useState<Membership | null>(null);
@@ -107,18 +103,18 @@ export default function Members() {
   } as OperationsSector;
 
   const handleMoveTeamAPI = async (
-    email: string, 
-    oldRole: string, 
-    newRole: string, 
-    supervisor?: [string, string]
+    email: string,
+    oldRole: string,
+    newRole: string,
+    supervisor?: [string, string],
   ) => {
     try {
       const response = await fetch(`/members/${email}/move-team`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ oldRole, newRole, supervisor })
+        body: JSON.stringify({ oldRole, newRole, supervisor }),
       });
-      
+
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -130,7 +126,7 @@ export default function Members() {
   };
 
   return (
-    <div className="">
+    <div>
       <NavBar />
 
       {deleteSummary && (
@@ -151,13 +147,20 @@ export default function Members() {
       )}
 
       <div className="h-screen grid place-items-center ">
-        <OperationsSectorLayout
-          sector={sector}
-          members={appMembers}
-          setMembers={setAppMembers}
-          handleMoveTeamAPI={handleMoveTeamAPI}
-          onRequestDelete={setPendingDelete}
-        />
+        {orgTree.map((sector, i) => {
+          console.log(sector.name);
+          return (
+            <OperationsSectorLayout
+              key={`sector-${sector}-${i}`}
+              sector={sector}
+              members={appMembers}
+              // Uses prop drilling for convenience and readability
+              // OperationsSectorsLayouts down to TeamsLayouts will have this prop
+              onMembersChange={setAppMembers}
+              handleMoveTeamAPI={handleMoveTeamAPI}
+            />
+          );
+        })}
       </div>
 
       <ConfirmDeleteModal
