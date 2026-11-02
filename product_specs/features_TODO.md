@@ -1,7 +1,7 @@
 # Features TODO — no spec written yet
 
 **Created:** 2026-09-14
-**Updated:** 2026-09-14
+**Updated:** 2026-11-02
 **Maintainer:** Brennen L.
 
 Everything here is a known, wanted piece of the HR System that does **not** have a
@@ -15,6 +15,29 @@ here is how work gets remembered.
 `Phase` — which build phase it belongs to (1 frontend · 2 backend · 3 database · 4 deployment)
 `Size` — rough number of 1-hour specs it would take
 `Difficulty` — Front End / Back End / DevOps, on our 1–4 scale
+
+---
+
+## Picked up in W45 (moved to `W45/`)
+
+Session state and route guards, permissions by user type (W45.2) · Search,
+filter and sort (W45.5) · Match the Crew Formations layout (W45.6) · Model
+ownership to the server, reads only, plus the API client and dev proxy (W45.1) ·
+Validation of `POST /members` (W45.3.2) · Test runner (W45.4).
+"Complete the REST surface" merged in PR #10.
+
+## Follow-ups raised by W45 specs
+
+| Feature | Phase | Size | FE | BE | DevOps |
+|---|:--:|:--:|:--:|:--:|:--:|
+| Route drag / delete / edit through the API and reconcile with the response | 2 | 2 | 3 | 2 | 1 |
+| Frontend logs in and out via `POST /api/login` / `/api/logout` (one source of truth for sessions) | 2 | 2 | 3 | 2 | 1 |
+| Per-route actions on the server, e.g. `requireAuth("delete")` | 2 | 1 | 1 | 2 | 1 |
+| Validate `PUT` / `move` / `move-team` / `add-role` bodies with the W45.3.2 helper | 2 | 1 | 1 | 3 | 1 |
+| Mount `server/routes/emailAuth.ts`, and stop `src/main.tsx` importing `server/EmailAuth.tsx` | 2 | 1 | 2 | 2 | 1 |
+| Server-side search: `GET /api/members?role=…&team=…` reusing `filterMembers` | 2 | 1 | 1 | 2 | 1 |
+| Sort controls and filters saved in URL query params | 1 | 1 | 3 | 1 | 1 |
+| Component tests (React Testing Library) | 1 | 2 | 3 | 1 | 2 |
 
 ---
 
@@ -37,22 +60,6 @@ imported by nobody. The screen should read from the model.
 Phase 1 spec, LoginScreen item 7: a registration button where a member picks a
 username, password and user type (`ADMIN` / `MEMBER` / `GUEST`). Needs duplicate-
 username handling and some password rules.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Session state and route guards | 2 | 3 | 1 | 1 |
-
-Right now `/members` is reachable by typing the URL — login is decoration. Needs
-a logged-in user held in context, a redirect for unauthenticated visitors, and a
-log-out control in the navbar. `src/components/navbar.tsx` currently has a single
-hardcoded Login link and nothing else.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Permissions by user type | 2 | 3 | 2 | 1 |
-
-Delete, move and role-edit should be HR/admin only; a `MEMBER` sees read-only;
-a `GUEST` sees less again. Blocked on session state above.
 
 | Feature | Size | FE | BE | DevOps |
 |---|:--:|:--:|:--:|:--:|
@@ -142,28 +149,11 @@ and validation.
 
 | Feature | Size | FE | BE | DevOps |
 |---|:--:|:--:|:--:|:--:|
-| Search, filter and sort members | 2 | 3 | 1 | 1 |
-
-By name, role, team, availability status, proficiency. The HR Committee's most
-common question is "who is free and knows React" and today that is answered by
-scrolling.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
 | Circular-relationship report | 1 | 2 | 2 | 1 |
 
 `getCycles` (Tarjan's SCC) is implemented and tested by nobody and surfaced
 nowhere. A small admin page listing members in a reporting cycle would make it
 useful and would catch data-entry mistakes.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Match the Crew Formations visual layout | 2 | 3 | 1 | 1 |
-
-The business spec says the product "should have the same design and layout as our
-current Crew Formations spreadsheet". Current styling is placeholder — yellow
-sectors, red departments, purple team headers. Needs a real pass against the
-sheet, including the colour key.
 
 | Feature | Size | FE | BE | DevOps |
 |---|:--:|:--:|:--:|:--:|
@@ -189,45 +179,6 @@ and no small-screen story.
 ---
 
 ## Phase 2 — Backend
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Move model ownership to the server | 3 | 2 | 3 | 2 |
-
-Today `src/pages/members.tsx` and `server/index.ts` both import `data.ts`
-directly. The frontend must stop importing the model and talk over HTTP instead.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Complete the REST surface | 3 | 1 | 3 | 1 |
-
-`server/index.ts` is a stub with real bugs to fix on the way: the `add-role` and
-`delete` routes are typed `Request<{ email: string }>` but registered at
-`/members/:id`, so `req.params.email` is always `undefined` and both routes are
-dead. Error branches call `res.status(400)` without `.send()` or `.json()`,
-leaving the request hanging until it times out. Needs those params fixed, a `PUT`
-for member edits, proper status codes, and JSON error bodies.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| API client layer on the frontend | 2 | 3 | 2 | 1 |
-
-One module wrapping `fetch`, with loading and error states, so components never
-call `fetch` directly.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| CORS and dev proxy | 1 | 1 | 2 | 2 |
-
-Vite on one port, Express on 3000. Configure it once properly rather than each
-developer working around it.
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Server-side validation | 2 | 1 | 3 | 1 |
-
-The `POST /members` route pushes `req.body` into the array unvalidated. Anything
-at all can become a member.
 
 | Feature | Size | FE | BE | DevOps |
 |---|:--:|:--:|:--:|:--:|
@@ -271,16 +222,6 @@ backend. Worth reconciling before Phase 4 starts properly.
 ---
 
 ## Cross-cutting / engineering practice
-
-| Feature | Size | FE | BE | DevOps |
-|---|:--:|:--:|:--:|:--:|
-| Set up a test runner | 2 | 2 | 2 | 2 |
-
-**This is the highest-leverage item in this file.** `package.json` has no `test`
-script. Model code — `getCycles`, `moveMemberToTeam`, `buildOrganization`,
-`removeMemberDeep` — is pure and trivially testable, and every spec this week
-says "verify by hand with a `console.log`" because we have nothing better.
-Vitest plus the existing Vite config is close to zero configuration.
 
 | Feature | Size | FE | BE | DevOps |
 |---|:--:|:--:|:--:|:--:|
