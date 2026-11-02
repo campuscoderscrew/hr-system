@@ -1,5 +1,5 @@
-import type { Membership, Role, SupervisorRef } from "./types";
-import { currentPositions } from "./types.ts";
+import type { Membership, Position, Role, SupervisorRef } from "./types";
+import { currentPositions } from "./types";
 
 /**
  * Determines all cyclic supervisor relationships in linear time using Tarjan's
@@ -199,4 +199,140 @@ function removeMember(members: Membership[], email: string): Membership | null {
   return member;
 }
 
-export { getCycles, addMember, moveMember, moveMemberToTeam, addRole, removeMember };
+interface SupervisorReference {
+  member: Membership;
+  position: Position;
+  kind: "supervisor";
+}
+
+/**
+ * Audit: every place `email`'s owner is referenced as a supervisor by someone
+ * else, across ALL positions (current and historical). Read-only.
+ * Matches against every email the owner has, since a ref may carry any of them.
+ * @returns The references; `[]` if nobody references them
+ */
+function findReferencesTo(
+  members: Membership[],
+  email: string,
+): SupervisorReference[] {
+  // Resolve the person first so a secondary email still finds every reference
+  const target = members.find((member) => member.emails.includes(email));
+  const targetEmails = target ? target.emails : [email];
+
+  const references: SupervisorReference[] = [];
+  for (const member of members) {
+    // A member's reference to themselves is not "someone else"
+    if (member === target) continue;
+    for (const position of member.positionHistory) {
+      if (position.supervisor && targetEmails.includes(position.supervisor[1])) {
+        references.push({ member, position, kind: "supervisor" });
+      }
+    }
+  }
+  return references;
+}
+
+/**
+ * Removes a member AND cleans up supervisor references to them.
+ *
+ * Policy (clear current, preserve history):
+ * - CURRENT positions that named the removed member as supervisor have their
+ *   `supervisor` cleared. We no longer know who supervises that person, and
+ *   saying so is more honest than leaving a ref to someone who does not exist.
+ * - HISTORICAL positions (those with an endDate) are left untouched. They
+ *   record who supervised the role *at the time*; erasing that would falsify
+ *   history, and nothing reads ended positions to build the live org.
+ * - We deliberately do NOT reassign to the supervisor's supervisor. That would
+ *   invent a reporting line HR never approved.
+ *
+ * Mutates `members` and the affected positions in place, like the other
+ * operations. Does not touch `removeMember`, which server/index.ts imports.
+ */
+function removeMemberDeep(
+  members: Membership[],
+  email: string,
+): {
+  removed: Membership | null;
+  clearedReferences: number;
+  affectedMembers: number;
+} {
+  // Audit BEFORE removing, while every email of the member still resolves to them
+  const references = findReferencesTo(members, email);
+
+  const removed = removeMember(members, email);
+  if (!removed) {
+    return { removed: null, clearedReferences: 0, affectedMembers: 0 };
+  }
+
+  const current = references.filter(({ position }) => position.endDate === undefined);
+  current.forEach(({ position }) => {
+    delete position.supervisor;
+  });
+
+  return {
+    removed,
+    clearedReferences: current.length,
+    affectedMembers: new Set(current.map(({ member }) => member)).size,
+  };
+}
+
+// Profile fields a member edit may change. `positionHistory` is deliberately
+// absent: history is append-only and changes through moveMember / addRole.
+type MemberEdits = Partial<
+  Pick<Membership, "name" | "emails" | "discord" | "github" | "desiredRoles">
+>;
+
+/**
+ * Edits a member's profile fields and keeps supervisor references to them in sync.
+ *
+ * A `SupervisorRef` is a denormalized [name, primary email] copy (see types.ts),
+ * so a rename or primary-email change would leave every position naming this
+ * member as supervisor pointing at someone who no longer exists. Every such
+ * ref is rewritten, historical ones included: unlike a delete, the supervisor
+ * is still the same person, so correcting their name does not falsify history.
+ *
+ * Mutates the member and the affected positions in place, like the other operations.
+ * @param members List of members in the model
+ * @param email Any email of the member
+ * @param edits The fields to change; fields not present are left alone
+ * @returns The updated member and how many supervisor refs were rewritten; `null` if no member has `email`
+ */
+function updateMember(
+  members: Membership[],
+  email: string,
+  edits: MemberEdits,
+): { updated: Membership; updatedReferences: number } | null {
+  const member = members.find((member) => member.emails.includes(email));
+  if (!member) return null;
+
+  // Audit BEFORE editing, while the member's old emails still match their refs
+  const references = findReferencesTo(members, email);
+
+  Object.assign(member, edits);
+  member.updatedAt = new Date();
+
+  const [name, primaryEmail] = [member.name, member.emails[0]];
+  const stale = references.filter(
+    ({ position }) =>
+      position.supervisor?.[0] !== name || position.supervisor?.[1] !== primaryEmail,
+  );
+  // A fresh tuple per position, so no two positions share one mutable array
+  stale.forEach(({ position }) => {
+    position.supervisor = [name, primaryEmail];
+  });
+
+  return { updated: member, updatedReferences: stale.length };
+}
+
+export {
+  getCycles,
+  addMember,
+  moveMember,
+  moveMemberToTeam,
+  addRole,
+  removeMember,
+  findReferencesTo,
+  removeMemberDeep,
+  updateMember,
+};
+export type { MemberEdits };
