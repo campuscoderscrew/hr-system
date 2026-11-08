@@ -5319,9 +5319,9 @@ export const members: Membership[] = [
 // `bcrypt` to secure them in if some breach happens.
 // Salting is especially important to prevent rainbow table attacks
 export const user_logins: Login[] = [
-  { username: "admin", password: "password123", userType: "ADMIN" },
-  { username: "user1", password: "secret", userType: "MEMBER" },
-  { username: "6", password: "7", userType: "ADMIN" },
+  { username: "admin", password: "password123", usertype: "ADMIN" },
+  { username: "user1", password: "secret", usertype: "MEMBER" },
+  { username: "6", password: "7", usertype: "ADMIN" },
 ];
 
 export const user_emails: { username: string; email: string }[] = [

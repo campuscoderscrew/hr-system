@@ -41,7 +41,7 @@ const TeamLayout = (
     onMembersChange,
     onRequestDelete,
   } = props;
-  const { loginStatus } = useContext(UserAuthContext);
+  const { currentUser } = useContext(UserAuthContext);
 
   return (
     <div
@@ -58,7 +58,7 @@ const TeamLayout = (
         e.preventDefault();
 
         // Only `ADMIN` and `HR` may edit
-        if (loginStatus?.userType !== "ADMIN" && loginStatus?.userType !== "HR")
+        if (currentUser?.usertype !== "ADMIN" && currentUser?.usertype !== "HR")
           return;
 
         const payloadStr = e.dataTransfer.getData("application/json");

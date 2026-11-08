@@ -11,9 +11,10 @@ import LoginScreen from "./pages/login.js";
 import ChangePasswordScreen from "./pages/changePassword.js";
 import EmailAuth from "../server/EmailAuth.js";
 import { UserAuthContext, UserAuthProvider } from "./hooks/UserAuthContext.js";
+import RequireLogin from "./components/RequireLogin.js";
 
 export default function App() {
-  const { loginStatus } = useContext(UserAuthContext);
+  const { currentUser } = useContext(UserAuthContext);
 
   return (
     <Routes>
@@ -21,7 +22,7 @@ export default function App() {
       <Route
         path="/members"
         element={
-          loginStatus !== undefined ? <Members /> : <Navigate to={"/"} />
+          <RequireLogin user={currentUser}><Members /> </RequireLogin>
         }
       />
       <Route path="/login" element={<LoginScreen />} />

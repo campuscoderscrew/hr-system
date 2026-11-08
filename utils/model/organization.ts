@@ -1,5 +1,4 @@
 import {
-  currentPositions,
   isTeamLead,
   type Cluster,
   type Department,
@@ -10,7 +9,7 @@ import {
   type SectorNames,
   type Team,
 } from "./types.ts";
-import { members } from "./data.ts";
+import { currentPositions } from "./operations.ts";
 
 export function buildOrganization(members: Membership[]): OperationsSector[] {
   // Maps indices of operation sectors, departments, and clusters for faster lookup

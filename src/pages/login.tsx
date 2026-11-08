@@ -8,7 +8,7 @@ import { UserAuthContext } from "@src/hooks/UserAuthContext";
 import { cn } from "@src/utils";
 
 export default function LoginScreen() {
-  const { loginStatus, setLoginStatus } = useContext(UserAuthContext);
+  const { currentUser, login } = useContext(UserAuthContext);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -26,10 +26,9 @@ export default function LoginScreen() {
     const user = user_logins.find((item) => item.username === username.trim());
     if (user && user.password === password) {
       setError("");
+      login(user);
 
-      setLoginStatus(user);
-
-      // navigate("/members");
+      // Navigation is handled by useEffect hook
       return;
     }
 
@@ -44,8 +43,8 @@ export default function LoginScreen() {
   };
 
   useEffect(() => {
-    if (loginStatus !== undefined) navigate("/members");
-  }, [loginStatus]);
+    if (currentUser !== null) navigate("/members");
+  }, [currentUser]);
 
   return (
     <div>

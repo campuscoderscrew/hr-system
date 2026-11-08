@@ -14,7 +14,7 @@ declare module "express-session" {
 
 // Credential Verifier Function
 export function verifyCredentials(credentials: Login): boolean {
-    const { username, password, userType } = credentials;
+    const { username, password, usertype: userType } = credentials;
 
     // Admin check
     // For now, we are using a hardcoded password check for demonstration
