@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -13,29 +13,29 @@ import EmailAuth from "../server/EmailAuth.js";
 import { UserAuthContext, UserAuthProvider } from "./hooks/UserAuthContext.js";
 
 export default function App() {
-  const { loginStatus, setLoginStatus } = useContext(UserAuthContext);
+  const { loginStatus } = useContext(UserAuthContext);
 
   return (
-    <UserAuthProvider>
-      <Routes>
-        <Route path="/" element={<LoginScreen />} />
-        <Route
-          path="/members"
-          element={
-            loginStatus !== undefined ? <Members /> : <Navigate to={"/login"} />
-          }
-        />
-        <Route path="/login" element={<LoginScreen />} />
-        <Route path="/change-password" element={<ChangePasswordScreen />} />
-        <Route path="/email-test" element={<EmailAuth code={"123123"} />} />
-      </Routes>
-    </UserAuthProvider>
+    <Routes>
+      <Route path="/" element={<LoginScreen />} />
+      <Route
+        path="/members"
+        element={
+          loginStatus !== undefined ? <Members /> : <Navigate to={"/"} />
+        }
+      />
+      <Route path="/login" element={<LoginScreen />} />
+      <Route path="/change-password" element={<ChangePasswordScreen />} />
+      <Route path="/email-test" element={<EmailAuth code={"123123"} />} />
+    </Routes>
   );
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
   <BrowserRouter>
-    <App />
+    <UserAuthProvider>
+      <App />
+    </UserAuthProvider>
   </BrowserRouter>,
 );

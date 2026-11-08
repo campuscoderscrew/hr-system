@@ -27,7 +27,7 @@ export const members: Membership[] = [
     github: "NONE",
     joinDate: new Date("1970-01-01"),
     createdAt: new Date("1970-01-01"),
-    updatedAt: new Date("1970-01-01")
+    updatedAt: new Date("1970-01-01"),
   },
   {
     name: "Jane Smith",
@@ -5311,15 +5311,19 @@ export const members: Membership[] = [
     github: "NONE",
     joinDate: new Date("2022-09-10"),
     createdAt: new Date("2022-09-10"),
-    updatedAt: new Date("2025-08-08")
-  }
+    updatedAt: new Date("2025-08-08"),
+  },
 ];
 
 // In the future, the logins should be stored in as hashes with salting like
 // `bcrypt` to secure them in if some breach happens.
 // Salting is especially important to prevent rainbow table attacks
-export const user_logins : Login[] = [
+export const user_logins: Login[] = [
   { username: "admin", password: "password123", userType: "ADMIN" },
   { username: "user1", password: "secret", userType: "MEMBER" },
   { username: "6", password: "7", userType: "ADMIN" },
+];
+
+export const user_emails: { username: string; email: string }[] = [
+  { email: "admin@gmail.com", username: "admin" },
 ];

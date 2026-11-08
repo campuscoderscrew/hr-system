@@ -1,6 +1,7 @@
 // TODO: Change all prop types to reflect types defined in
 // `~/src/modal/types.ts`
 
+import { useContext } from "react";
 import type { ClassValue } from "clsx";
 import type {
   Department,
@@ -8,21 +9,16 @@ import type {
   OperationsSector,
   Role,
   Team,
-} from "../../utils/model/types";
+} from "@utils/model/types";
+import { proficiencyToString, availabilityToString } from "@utils/model/types";
+import { currentPositions, moveMemberToTeam } from "@utils/model/operations";
 
-import {
-  proficiencyToString,
-  availabilityToString,
-  currentPositions,
-} from "../../utils/model/types";
-import { cn } from "../utils";
-import { moveMemberToTeam } from "../../utils/model/operations";
+import { cn } from "@src/utils";
+import { UserAuthContext } from "@src/hooks/UserAuthContext";
 // import { hasSubscribers } from "diagnostics_channel";
 
-const TeamLayout = (props: {
+type LayoutProp = {
   className?: ClassValue[];
-  team: Team;
-  departmentName: string;
   members: Membership[];
   onMembersChange: (members: Membership[]) => void;
   handleMoveTeamAPI: (
@@ -31,13 +27,21 @@ const TeamLayout = (props: {
     newRole: string,
     supervisor?: [string, string],
   ) => Promise<void>;
-}) => {
-  const { className, team, departmentName, members, onMembersChange } = props;
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
   onRequestDelete: (member: Membership) => void;
-}) => {
-  const { className, team, departmentName, members, setMembers, onRequestDelete } = props;
+};
+
+const TeamLayout = (
+  props: LayoutProp & { team: Team; departmentName: string },
+) => {
+  const {
+    className,
+    team,
+    departmentName,
+    members,
+    onMembersChange,
+    onRequestDelete,
+  } = props;
+  const { loginStatus } = useContext(UserAuthContext);
 
   return (
     <div
@@ -52,6 +56,11 @@ const TeamLayout = (props: {
       onDragOver={(e) => e.preventDefault()} // Required to allow dropping
       onDrop={(e) => {
         e.preventDefault();
+
+        // Only `ADMIN` and `HR` may edit
+        if (loginStatus?.userType !== "ADMIN" && loginStatus?.userType !== "HR")
+          return;
+
         const payloadStr = e.dataTransfer.getData("application/json");
         if (!payloadStr) return;
 
@@ -193,7 +202,7 @@ const TeamLayout = (props: {
                       oldRole: currentRole,
                       sourceDepartment: departmentName,
                       isTeamLead: isTeamLead,
-                    })
+                    }),
                   );
                 }}
               >
@@ -202,12 +211,14 @@ const TeamLayout = (props: {
                 <span>{member.discord}</span>
                 {currentPosition?.proficiency && (
                   <span>
-                    proficiency: {proficiencyToString(currentPosition.proficiency)}
+                    proficiency:{" "}
+                    {proficiencyToString(currentPosition.proficiency)}
                   </span>
                 )}
                 {currentPosition?.availability && (
                   <span>
-                    availability: {availabilityToString(currentPosition.availability)}
+                    availability:{" "}
+                    {availabilityToString(currentPosition.availability)}
                   </span>
                 )}
                 {member.github && <span>{member.github}</span>}
@@ -230,27 +241,16 @@ const TeamLayout = (props: {
   );
 };
 
-const DepartmentLayout = (props: {
-  className?: ClassValue[];
-  department: Department;
-  members: Membership[];
-  onMembersChange: (members: Membership[]) => void;
-  handleMoveTeamAPI: (
-    email: string,
-    oldRole: string,
-    newRole: string,
-    supervisor?: [string, string],
-  ) => Promise<void>;
-}) => {
-  const { className, department, members, onMembersChange, handleMoveTeamAPI } =
-    props;
+const DepartmentLayout = (props: LayoutProp & { department: Department }) => {
+  const {
+    className,
+    department,
+    members,
+    onMembersChange,
+    handleMoveTeamAPI,
+    onRequestDelete,
+  } = props;
 
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
-  onRequestDelete: (member: Membership) => void;
-}) => {
-  const { className, department, members, setMembers, handleMoveTeamAPI, onRequestDelete } = props;
-  
   return (
     <div
       className={cn("p-4 flex flex-col gap-2 bg-red-100 rounded-xl", className)}
@@ -272,25 +272,17 @@ const DepartmentLayout = (props: {
   );
 };
 
-const OperationsSectorLayout = (props: {
-  className?: ClassValue[];
-  sector: OperationsSector;
-  members: Membership[];
-  onMembersChange: (members: Membership[]) => void;
-  handleMoveTeamAPI: (
-    email: string,
-    oldRole: string,
-    newRole: string,
-    supervisor?: [string, string],
-  ) => Promise<void>;
-}) => {
-  const { className, sector, members, onMembersChange, handleMoveTeamAPI } =
-    props;
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
-  onRequestDelete: (member: Membership) => void;
-}) => {
-  const { className, sector, members, setMembers, handleMoveTeamAPI, onRequestDelete } = props;
+const OperationsSectorLayout = (
+  props: LayoutProp & { sector: OperationsSector },
+) => {
+  const {
+    className,
+    sector,
+    members,
+    onMembersChange,
+    handleMoveTeamAPI,
+    onRequestDelete,
+  } = props;
   return (
     <div
       className={cn(

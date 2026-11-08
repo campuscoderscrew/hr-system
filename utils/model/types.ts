@@ -265,10 +265,7 @@ export interface Position {
   cluster?: string;
 }
 
-// Positions a member currently holds (those with no endDate).
-export function currentPositions(member: Membership): Position[] {
-  return member.positionHistory.filter((p) => p.endDate === undefined);
-}
+
 
 export interface Membership {
   id?: string;

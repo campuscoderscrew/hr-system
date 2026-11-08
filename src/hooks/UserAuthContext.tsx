@@ -1,6 +1,7 @@
-import type { Login } from "@utils/model/LoginModels";
 import { createContext, useContext, useState } from "react";
 import type { Dispatch, ReactElement, SetStateAction } from "react";
+
+import type { Login } from "@utils/model/LoginModels";
 
 const UserAuthContext = createContext<{
   loginStatus: Login | undefined;

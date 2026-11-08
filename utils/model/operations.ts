@@ -1,5 +1,9 @@
 import type { Membership, Position, Role, SupervisorRef } from "./types";
-import { currentPositions } from "./types";
+
+// Positions a member currently holds (those with no endDate).
+export function currentPositions(member: Membership): Position[] {
+  return member.positionHistory.filter((p) => p.endDate === undefined);
+}
 
 /**
  * Determines all cyclic supervisor relationships in linear time using Tarjan's
