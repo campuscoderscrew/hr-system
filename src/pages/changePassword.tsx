@@ -2,34 +2,23 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { debounce } from "lodash";
 
-import NavBar from "@src/components/navbar";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
+import { user_emails } from "@utils/model/data";
+
 import { cn } from "@src/utils";
 import CodeInput from "@src/components/CodeInput";
-
-type UserAuth = {
-  username: string;
-  email: string;
-};
-
-const emails = [{ email: "admin@gmail.com", username: "admin" }];
-
-const users = [
-  { username: "admin", password: "password123", userType: "ADMIN" },
-  { username: "user1", password: "secret", userType: "MEMBER" },
-  { username: "6", password: "7", userType: "ADMIN" },
-];
+import Navbar from "@src/components/NavBar";
 
 export default function ChangePasswordScreen() {
   const [formProgress, setFormProgress] = useState(0); // Page of the form
-  const [userAuthForm, setUserAuthForm] = useState<UserAuth | undefined>(); // User credentials
+  const [userAuthForm, setUserAuthForm] = useState<
+    { username: string; email: string } | undefined
+  >(); // User credentials
 
   // 2FA password sent to user's email when resetting password
   const PASSCODE_2FA_LENGTH = 6;
-  const [passcode2Fa, setPasscode2Fa] = useState("");
 
   /**
    * Checks if the code matches with the email; blocks for 3 seconds to prevent spamming
@@ -51,7 +40,7 @@ export default function ChangePasswordScreen() {
       );
       if (!response.ok) return;
       const isCodeCorrect = (await response.json()).isCodeCorrect;
-      if (isCodeCorrect) moveToFormPage(3)
+      if (isCodeCorrect) moveToFormPage(3);
     }, 3000),
   ).current;
   useEffect(() => {
@@ -77,7 +66,7 @@ export default function ChangePasswordScreen() {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(event.currentTarget));
 
-    const emailRecord = emails.find(
+    const emailRecord = user_emails.find(
       ({ username, email }) =>
         username === formData.username && email === formData.email,
     );
@@ -105,8 +94,6 @@ export default function ChangePasswordScreen() {
 
   // Page 2 navigation
   const handlePasscode2FaChange = async (passcode: string) => {
-    setPasscode2Fa(passcode);
-
     if (passcode.length !== PASSCODE_2FA_LENGTH) return;
 
     // Checks verification code
@@ -146,7 +133,7 @@ export default function ChangePasswordScreen() {
 
   return (
     <div>
-      <NavBar />
+      <Navbar />
       <div className="min-h-screen px-4 py-12 grid place-items-center">
         <div
           className={cn(

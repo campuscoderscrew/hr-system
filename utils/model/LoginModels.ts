@@ -1,10 +1,12 @@
 import type { UserType } from "./types";
 
 export interface Login {
-    Username: string;
-    Password: string;
-    UserType: UserType;
+    username: string;
+    password: string;
+    usertype: UserType;
 }
+
+export type CurrentUser = Omit<Login, "password">;
 
 export interface LoginModel {
     logins: Login[];

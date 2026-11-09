@@ -1,13 +1,14 @@
 import React, { createContext, useMemo, useState } from "react";
 
-import NavBar from "@src/components/navbar";
-import { OperationsSectorLayout } from "../components/SpreadsheetLayout";
-import type { Membership } from "../../utils/model/types";
-import { members as initialMembers } from "../../utils/model/data";
+import type { Department, Membership, OperationsSector, Team } from "@utils/model/types";
+import { members as initialMembers } from "@utils/model/data";
 import { buildOrganization } from "@utils/model/organization";
 
-import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
-import { removeMemberDeep } from "../../utils/model/operations";
+import { currentPositions, removeMemberDeep } from "@utils/model/operations";
+
+import NavBar from "@src/components/NavBar";
+import { OperationsSectorLayout } from "@src/components/SpreadsheetLayout";
+import ConfirmDeleteModal from "@src/components/ConfirmDeleteModal";
 
 const formatMonth = (date: Date) =>
   date.toLocaleDateString("en-US", {
@@ -32,11 +33,8 @@ function describeTenure(member: Membership): string {
 }
 
 export default function Members() {
-  const [appMembers, setAppMembers] = useState<Membership[]>(
-    Array.from(initialMembers),
-  );
-  const orgTree = useMemo(() => buildOrganization(appMembers), [appMembers]);
   const [appMembers, setAppMembers] = useState<Membership[]>(initialMembers);
+  const orgTree = useMemo(() => buildOrganization(appMembers), [appMembers]);
 
   const [pendingDelete, setPendingDelete] = useState<Membership | null>(null);
   const [deleteSummary, setDeleteSummary] = useState<string | null>(null);
@@ -89,18 +87,18 @@ export default function Members() {
     )!,
   };
 
-  const department = {
-    name: "Development Department",
+  const department: Department = {
+    name: "Development",
     abbreviation: "Dev",
     members: appMembers,
     teams: [team, nonDevTeam, team],
-  } as Department;
+  };
 
-  const sector = {
+  const sector: OperationsSector = {
     name: "Development Operations",
     departments: [department, department],
     leadership: appMembers,
-  } as OperationsSector;
+  };
 
   const handleMoveTeamAPI = async (
     email: string,
@@ -158,6 +156,7 @@ export default function Members() {
               // OperationsSectorsLayouts down to TeamsLayouts will have this prop
               onMembersChange={setAppMembers}
               handleMoveTeamAPI={handleMoveTeamAPI}
+              onRequestDelete={(member) => {}} // TODO: Fill with actual method
             />
           );
         })}

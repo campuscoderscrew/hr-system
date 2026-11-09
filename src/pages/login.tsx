@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import NavBar from "@src/components/navbar";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { user_logins } from "@utils/model/data";
+
+import Navbar from "@src/components/NavBar";
+import { UserAuthContext } from "@src/hooks/UserAuthContext";
 import { cn } from "@src/utils";
 
-const users = [
-  { username: "admin", password: "password123", userType: "ADMIN" },
-  { username: "user1", password: "secret", userType: "MEMBER" },
-  { username: "6", password: "7", userType: "ADMIN" },
-];
-
 export default function LoginScreen() {
+  const { currentUser, login } = useContext(UserAuthContext);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,13 +20,15 @@ export default function LoginScreen() {
     navigate("/change-password");
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const user = users.find((item) => item.username === username.trim());
+    const user = user_logins.find((item) => item.username === username.trim());
     if (user && user.password === password) {
       setError("");
-      navigate("/members");
+      login(user);
+
+      // Navigation is handled by useEffect hook
       return;
     }
 
@@ -40,9 +42,13 @@ export default function LoginScreen() {
     }
   };
 
+  useEffect(() => {
+    if (currentUser !== null) navigate("/members");
+  }, [currentUser]);
+
   return (
     <div>
-      <NavBar />
+      <Navbar />
       <div
         className={cn(
           "min-h-screen px-4 py-12",

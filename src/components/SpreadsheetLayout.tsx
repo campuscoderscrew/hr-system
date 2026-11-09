@@ -1,6 +1,7 @@
 // TODO: Change all prop types to reflect types defined in
 // `~/src/modal/types.ts`
 
+import { useContext } from "react";
 import type { ClassValue } from "clsx";
 import type {
   Department,
@@ -8,21 +9,17 @@ import type {
   OperationsSector,
   Role,
   Team,
-} from "../../utils/model/types";
+} from "@utils/model/types";
+import { proficiencyToString, availabilityToString } from "@utils/model/types";
+import { currentPositions, moveMemberToTeam } from "@utils/model/operations";
 
-import {
-  proficiencyToString,
-  availabilityToString,
-  currentPositions,
-} from "../../utils/model/types";
-import { cn } from "../utils";
-import { moveMemberToTeam } from "../../utils/model/operations";
+import { cn } from "@src/utils";
+import { UserAuthContext } from "@src/hooks/UserAuthContext";
+import { can } from "@utils/model/permissions";
 // import { hasSubscribers } from "diagnostics_channel";
 
-const TeamLayout = (props: {
+type LayoutProp = {
   className?: ClassValue[];
-  team: Team;
-  departmentName: string;
   members: Membership[];
   onMembersChange: (members: Membership[]) => void;
   handleMoveTeamAPI: (
@@ -31,13 +28,24 @@ const TeamLayout = (props: {
     newRole: string,
     supervisor?: [string, string],
   ) => Promise<void>;
-}) => {
-  const { className, team, departmentName, members, onMembersChange } = props;
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
   onRequestDelete: (member: Membership) => void;
-}) => {
-  const { className, team, departmentName, members, setMembers, onRequestDelete } = props;
+};
+
+const TeamLayout = (
+  props: LayoutProp & { team: Team; departmentName: string },
+) => {
+  const {
+    className,
+    team,
+    departmentName,
+    members,
+    onMembersChange,
+    onRequestDelete,
+  } = props;
+  const { currentUser } = useContext(UserAuthContext);
+  const canDrag = can(currentUser?.usertype, "move");
+  const canDelete = can(currentUser?.usertype, "delete");
+  const canViewContact = can(currentUser?.usertype, "viewContact");
 
   return (
     <div
@@ -52,6 +60,10 @@ const TeamLayout = (props: {
       onDragOver={(e) => e.preventDefault()} // Required to allow dropping
       onDrop={(e) => {
         e.preventDefault();
+
+        // Only appropriate users may edit
+        if (!can(currentUser?.usertype, "edit")) return;
+
         const payloadStr = e.dataTransfer.getData("application/json");
         if (!payloadStr) return;
 
@@ -164,26 +176,15 @@ const TeamLayout = (props: {
           return (
             <div
               key={`member-${index}-${member.emails[0]}`}
-              // Added cursor styles for drag UX
-              className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
-              // Makes the member card draggable and pack the payload
-              draggable={true}
-              onDragStart={(e) => {
-                const isTeamLead = member.name === team.teamLead?.name;
-                e.dataTransfer.setData(
-                  "application/json",
-                  JSON.stringify({
-                    email: member.emails[0],
-                    oldRole: currentRole,
-                    sourceDepartment: departmentName,
-                    isTeamLead: isTeamLead,
-                  }),
-                );
-              }}
+              className={cn("flex divide-y")}
             >
               <div
-                className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
-                draggable={true}
+                className={cn(
+                  "flex flex-col divide-y",
+                  // Added cursor styles for drag UX
+                  { "cursor-grab active:cursor-grabbing": canDrag },
+                )}
+                draggable={canDrag}
                 onDragStart={(e) => {
                   const isTeamLead = member.name === team.teamLead?.name;
                   e.dataTransfer.setData(
@@ -193,35 +194,41 @@ const TeamLayout = (props: {
                       oldRole: currentRole,
                       sourceDepartment: departmentName,
                       isTeamLead: isTeamLead,
-                    })
+                    }),
                   );
                 }}
               >
                 <span>{currentRole}</span>
                 <span>{member.name}</span>
-                <span>{member.discord}</span>
+                {canViewContact && <span>{member.discord}</span>}
                 {currentPosition?.proficiency && (
                   <span>
-                    proficiency: {proficiencyToString(currentPosition.proficiency)}
+                    proficiency:{" "}
+                    {proficiencyToString(currentPosition.proficiency)}
                   </span>
                 )}
                 {currentPosition?.availability && (
                   <span>
-                    availability: {availabilityToString(currentPosition.availability)}
+                    availability:{" "}
+                    {availabilityToString(currentPosition.availability)}
                   </span>
                 )}
-                {member.github && <span>{member.github}</span>}
-                <span>{member.emails.join(", ")}</span>
+                {canViewContact && member.github && (
+                  <span>{member.github}</span>
+                )}
+                {canViewContact && <span>{member.emails.join(", ")}</span>}
               </div>
 
-              <button
-                type="button"
-                aria-label={`Delete ${member.name}`}
-                onClick={() => onRequestDelete(member)}
-                className="absolute right-1 top-1 rounded p-1 text-neutral-400 opacity-60 hover:bg-red-50 hover:text-red-600 hover:opacity-100 focus:bg-red-50 focus:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300"
-              >
-                <i className="fa-solid fa-trash text-xs" aria-hidden="true" />
-              </button>
+              {canDelete && (
+                <button
+                  type="button"
+                  aria-label={`Delete ${member.name}`}
+                  onClick={() => onRequestDelete(member)}
+                  className="absolute right-1 top-1 rounded p-1 text-neutral-400 opacity-60 hover:bg-red-50 hover:text-red-600 hover:opacity-100 focus:bg-red-50 focus:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  <i className="fa-solid fa-trash text-xs" aria-hidden="true" />
+                </button>
+              )}
             </div>
           );
         })}
@@ -230,27 +237,16 @@ const TeamLayout = (props: {
   );
 };
 
-const DepartmentLayout = (props: {
-  className?: ClassValue[];
-  department: Department;
-  members: Membership[];
-  onMembersChange: (members: Membership[]) => void;
-  handleMoveTeamAPI: (
-    email: string,
-    oldRole: string,
-    newRole: string,
-    supervisor?: [string, string],
-  ) => Promise<void>;
-}) => {
-  const { className, department, members, onMembersChange, handleMoveTeamAPI } =
-    props;
+const DepartmentLayout = (props: LayoutProp & { department: Department }) => {
+  const {
+    className,
+    department,
+    members,
+    onMembersChange,
+    handleMoveTeamAPI,
+    onRequestDelete,
+  } = props;
 
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
-  onRequestDelete: (member: Membership) => void;
-}) => {
-  const { className, department, members, setMembers, handleMoveTeamAPI, onRequestDelete } = props;
-  
   return (
     <div
       className={cn("p-4 flex flex-col gap-2 bg-red-100 rounded-xl", className)}
@@ -272,25 +268,17 @@ const DepartmentLayout = (props: {
   );
 };
 
-const OperationsSectorLayout = (props: {
-  className?: ClassValue[];
-  sector: OperationsSector;
-  members: Membership[];
-  onMembersChange: (members: Membership[]) => void;
-  handleMoveTeamAPI: (
-    email: string,
-    oldRole: string,
-    newRole: string,
-    supervisor?: [string, string],
-  ) => Promise<void>;
-}) => {
-  const { className, sector, members, onMembersChange, handleMoveTeamAPI } =
-    props;
-  setMembers: (members: Membership[]) => void;
-  handleMoveTeamAPI: (email: string, oldRole: string, newRole: string, supervisor?: [string, string]) => Promise<void>;
-  onRequestDelete: (member: Membership) => void;
-}) => {
-  const { className, sector, members, setMembers, handleMoveTeamAPI, onRequestDelete } = props;
+const OperationsSectorLayout = (
+  props: LayoutProp & { sector: OperationsSector },
+) => {
+  const {
+    className,
+    sector,
+    members,
+    onMembersChange,
+    handleMoveTeamAPI,
+    onRequestDelete,
+  } = props;
   return (
     <div
       className={cn(

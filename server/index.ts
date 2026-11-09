@@ -8,14 +8,16 @@ import session from "express-session";
 import { members } from "../utils/model/data";
 import {
   addRole,
+  currentPositions,
   moveMember,
   moveMemberToTeam,
   removeMemberDeep,
   updateMember,
   type MemberEdits,
-} from "../utils/model/operations";
-import { currentPositions, type Membership } from "../utils/model/types";
-import { verifyCredentials, requireAuth } from "../utils/auth";
+} from "@utils/model/operations";
+import { type Membership } from "@utils/model/types";
+
+import { verifyCredentials, requireAuth } from "@utils/auth";
 
 const app: Express = express();
 const PORT = 3000;
@@ -118,8 +120,8 @@ app.post("/login", (req: Request, res: Response) => {
   if (verifyCredentials(credentials)) {
     // Save user data to the session to keep them logged in
     req.session.user = {
-      username: credentials.Username,
-      userType: credentials.UserType,
+      username: credentials.username,
+      userType: credentials.usertype,
     };
     res.status(200).json({ message: "Login successful!" });
   } else {

@@ -1,6 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import type { SessionData } from "express-session";
 import { type Login } from "./model/LoginModels";
+import { can } from "./model/permissions";
 
 // Adding username and userType to express-session SessionData interface
 declare module "express-session" {
@@ -14,13 +15,13 @@ declare module "express-session" {
 
 // Credential Verifier Function
 export function verifyCredentials(credentials: Login): boolean {
-    const { Username, Password, UserType } = credentials;
+    const { username, password, usertype: userType } = credentials;
 
     // Admin check
     // For now, we are using a hardcoded password check for demonstration
-    const isAdmin = Username === "admin" && Password === "supersecret" && UserType === "ADMIN";
+    const isAdmin = username === "admin" && password === "supersecret" && userType === "ADMIN";
     // HR check
-    const isHR = Username === "hr_user" && Password === "hrsecret" && UserType === "HR";
+    const isHR = username === "hr_user" && password === "hrsecret" && userType === "HR";
 
     return isAdmin || isHR;
 }
@@ -32,7 +33,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
         
         // Check if logged-in user has either Admin or HR role
         const role = req.session.user.userType;
-        if (role === "ADMIN" || role === "HR") {
+        if (can(role, req.session.action)) {
             next();
         } else {
             res.status(403).json({ error: "Forbidden: Only Admin and HR can perform this action." });
