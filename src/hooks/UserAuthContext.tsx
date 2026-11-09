@@ -26,6 +26,7 @@ const UserAuthProvider = ({ children }: { children: ReactElement }) => {
 
   const logout = () => {
     setCurrentUser(null);
+    window.sessionStorage.clear()
   };
 
   return (
