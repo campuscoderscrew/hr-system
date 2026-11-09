@@ -37,9 +37,9 @@ export default function NavBar() {
             "bg-slate-800 rounded-full text-sm text-center",
           )}
         >
-          {currentUser?.usertype}MEMBER
+          {currentUser?.usertype}
         </span>
-        <span className="text-ellipsis">{currentUser?.username}asdfasdf</span>
+        <span className="text-ellipsis">{currentUser?.username}</span>
       </div>
 
       <div className="my-auto">

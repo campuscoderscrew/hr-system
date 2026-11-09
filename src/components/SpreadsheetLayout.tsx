@@ -15,6 +15,7 @@ import { currentPositions, moveMemberToTeam } from "@utils/model/operations";
 
 import { cn } from "@src/utils";
 import { UserAuthContext } from "@src/hooks/UserAuthContext";
+import { can } from "@utils/model/permissions";
 // import { hasSubscribers } from "diagnostics_channel";
 
 type LayoutProp = {
@@ -42,6 +43,9 @@ const TeamLayout = (
     onRequestDelete,
   } = props;
   const { currentUser } = useContext(UserAuthContext);
+  const canDrag = can(currentUser?.usertype, "move");
+  const canDelete = can(currentUser?.usertype, "delete");
+  const canViewContact = can(currentUser?.usertype, "viewContact");
 
   return (
     <div
@@ -57,9 +61,8 @@ const TeamLayout = (
       onDrop={(e) => {
         e.preventDefault();
 
-        // Only `ADMIN` and `HR` may edit
-        if (currentUser?.usertype !== "ADMIN" && currentUser?.usertype !== "HR")
-          return;
+        // Only appropriate users may edit
+        if (!can(currentUser?.usertype, "edit")) return;
 
         const payloadStr = e.dataTransfer.getData("application/json");
         if (!payloadStr) return;
@@ -173,26 +176,15 @@ const TeamLayout = (
           return (
             <div
               key={`member-${index}-${member.emails[0]}`}
-              // Added cursor styles for drag UX
-              className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
-              // Makes the member card draggable and pack the payload
-              draggable={true}
-              onDragStart={(e) => {
-                const isTeamLead = member.name === team.teamLead?.name;
-                e.dataTransfer.setData(
-                  "application/json",
-                  JSON.stringify({
-                    email: member.emails[0],
-                    oldRole: currentRole,
-                    sourceDepartment: departmentName,
-                    isTeamLead: isTeamLead,
-                  }),
-                );
-              }}
+              className={cn("flex divide-y")}
             >
               <div
-                className="flex flex-col divide-y cursor-grab active:cursor-grabbing"
-                draggable={true}
+                className={cn(
+                  "flex flex-col divide-y",
+                  // Added cursor styles for drag UX
+                  { "cursor-grab active:cursor-grabbing": canDrag },
+                )}
+                draggable={canDrag}
                 onDragStart={(e) => {
                   const isTeamLead = member.name === team.teamLead?.name;
                   e.dataTransfer.setData(
@@ -208,7 +200,7 @@ const TeamLayout = (
               >
                 <span>{currentRole}</span>
                 <span>{member.name}</span>
-                <span>{member.discord}</span>
+                {canViewContact && <span>{member.discord}</span>}
                 {currentPosition?.proficiency && (
                   <span>
                     proficiency:{" "}
@@ -221,18 +213,22 @@ const TeamLayout = (
                     {availabilityToString(currentPosition.availability)}
                   </span>
                 )}
-                {member.github && <span>{member.github}</span>}
-                <span>{member.emails.join(", ")}</span>
+                {canViewContact && member.github && (
+                  <span>{member.github}</span>
+                )}
+                {canViewContact && <span>{member.emails.join(", ")}</span>}
               </div>
 
-              <button
-                type="button"
-                aria-label={`Delete ${member.name}`}
-                onClick={() => onRequestDelete(member)}
-                className="absolute right-1 top-1 rounded p-1 text-neutral-400 opacity-60 hover:bg-red-50 hover:text-red-600 hover:opacity-100 focus:bg-red-50 focus:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300"
-              >
-                <i className="fa-solid fa-trash text-xs" aria-hidden="true" />
-              </button>
+              {canDelete && (
+                <button
+                  type="button"
+                  aria-label={`Delete ${member.name}`}
+                  onClick={() => onRequestDelete(member)}
+                  className="absolute right-1 top-1 rounded p-1 text-neutral-400 opacity-60 hover:bg-red-50 hover:text-red-600 hover:opacity-100 focus:bg-red-50 focus:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  <i className="fa-solid fa-trash text-xs" aria-hidden="true" />
+                </button>
+              )}
             </div>
           );
         })}

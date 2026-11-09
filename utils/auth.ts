@@ -1,6 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import type { SessionData } from "express-session";
 import { type Login } from "./model/LoginModels";
+import { can } from "./model/permissions";
 
 // Adding username and userType to express-session SessionData interface
 declare module "express-session" {
@@ -32,7 +33,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
         
         // Check if logged-in user has either Admin or HR role
         const role = req.session.user.userType;
-        if (role === "ADMIN" || role === "HR") {
+        if (can(role, req.session.action)) {
             next();
         } else {
             res.status(403).json({ error: "Forbidden: Only Admin and HR can perform this action." });

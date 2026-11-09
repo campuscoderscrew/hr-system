@@ -17,7 +17,7 @@ const UserAuthProvider = ({ children }: { children: ReactElement }) => {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const login = (user: CurrentUser) => {
     if (user === null || currentUser !== null) return;
-    
+
     setCurrentUser(user);
     // For now, refreshing will clear all states instead of saving the login
     // as a session
@@ -26,7 +26,7 @@ const UserAuthProvider = ({ children }: { children: ReactElement }) => {
 
   const logout = () => {
     setCurrentUser(null);
-    window.sessionStorage.clear()
+    window.sessionStorage.clear();
   };
 
   return (
