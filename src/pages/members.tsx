@@ -36,7 +36,6 @@ export default function Members() {
     Array.from(initialMembers),
   );
   const orgTree = useMemo(() => buildOrganization(appMembers), [appMembers]);
-  const [appMembers, setAppMembers] = useState<Membership[]>(initialMembers);
 
   const [pendingDelete, setPendingDelete] = useState<Membership | null>(null);
   const [deleteSummary, setDeleteSummary] = useState<string | null>(null);

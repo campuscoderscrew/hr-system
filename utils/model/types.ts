@@ -57,37 +57,41 @@ export type UserType = "ADMIN" | "HR" | "MEMBER" | "GUEST";
 // Roles are exhaustive
 // "Team Lead" encompasses the Primary Lead and Secondary Lead roles.
 // Jr./Sr. variants are not roles
-export type Role =
+export const ROLES = [
   // Executive
-  | "President"
-  | "Vice President"
-  | "Head"
-  | "Secretary"
-  | "Treasurer"
+  "President",
+  "Vice President",
+  "Head",
+  "Secretary",
+  "Treasurer",
   // Team leadership
-  | "Primary Lead"
-  | "Secondary Lead"
-  | "Team Lead"
+  "Primary Lead",
+  "Secondary Lead",
+  "Team Lead",
   // Development Operations
-  | "Developer"
-  | "Designer"
-  | "QA Analyst"
-  | "Product Manager"
+  "Developer",
+  "Designer",
+  "QA Analyst",
+  "Product Manager",
   // Internal Operations
-  | "Accountant"
-  | "Financial Analyst"
-  | "Fundraiser"
-  | "Resource Manager"
-  | "Analyst"
-  | "Auditor"
-  | "Human Resources Specialist"
+  "Accountant",
+  "Financial Analyst",
+  "Fundraiser",
+  "Resource Manager",
+  "Analyst",
+  "Auditor",
+  "Human Resources Specialist",
   // External Operations
-  | "Marketer"
-  | "Recruiter"
-  | "Public Relations Specialist"
+  "Marketer",
+  "Recruiter",
+  "Public Relations Specialist",
   // Other
-  | "Advisor"
-  | "M";
+  "Advisor",
+  "M"
+] as const;
+
+export type Role = (typeof ROLES)[number];
+  
 
 export function isTeamLead(role: Role) {
   return (
