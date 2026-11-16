@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, {
   type Express,
   type NextFunction,
@@ -16,17 +17,21 @@ import {
 } from "../utils/model/operations";
 import { currentPositions, type Membership } from "../utils/model/types";
 import { verifyCredentials, requireAuth } from "../utils/auth";
+import { isNonEmptyString, reviveNewMember, validateNewMember } from "./validation";
 
 const app: Express = express();
 const PORT = 3000;
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+  console.warn("SESSION_SECRET is not set. Using an insecure dev-only fallback. Copy .env.example to .env and set one.");
+}
 
 app.use(express.json());
-app.use(cors())
 
 // Initialize express-session middleware
 app.use(
   session({
-    secret: "my-super-secret-key", // Temporarily hard-coded
+    secret: sessionSecret ?? "dev-only-insecure-secret",
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false } // Set to true if using HTTPS
@@ -56,10 +61,6 @@ function takenEmail(emails: string[], except?: Membership): string | undefined {
 // Fields PUT /members/:email may change; see `updateMember` in operations.ts
 const EDITABLE_FIELDS = ["name", "emails", "discord", "github", "desiredRoles"];
 
-// A presence check only: it does not confirm a string is a valid `Role`, which
-// is left to the server-side validation TODO
-const isNonEmptyString = (value: unknown): boolean =>
-  typeof value === "string" && value.trim() !== "";
 
 /**
  * Checks a member-edit body holds only editable fields of the right shape.
@@ -87,7 +88,6 @@ function memberEditError(body: unknown): string | null {
     return "name must be a non-empty string.";
   }
   if (
-    emails !== undefined &&
     !(Array.isArray(emails) && emails.length > 0 && emails.every(isNonEmptyString))
   ) {
     return "emails must be a non-empty array of strings.";
@@ -111,8 +111,10 @@ function memberEditError(body: unknown): string | null {
  * Routes
  */
 
+const api = express.Router();
+
 // POST login route to authenticate users
-app.post("/login", (req: Request, res: Response) => {
+api.post("/login", (req: Request, res: Response) => {
   const credentials = req.body;
 
   if (verifyCredentials(credentials)) {
@@ -128,7 +130,7 @@ app.post("/login", (req: Request, res: Response) => {
 });
 
 // POST logout route to end the session
-app.post("/logout", (req: Request, res: Response) => {
+api.post("/logout", (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ error: "Failed to log out." });
     res.status(200).json({ message: "Successfully logged out." });
@@ -136,12 +138,12 @@ app.post("/logout", (req: Request, res: Response) => {
 });
 
 // GET all members (Public - no authentication required)
-app.get("/members", (req: Request, res: Response) => {
+api.get("/members", (req: Request, res: Response) => {
   res.json(members);
 });
 
 // GET one member by any of their emails (Public - no authentication required)
-app.get("/members/:email", (req: Request<{ email: string }>, res: Response) => {
+api.get("/members/:email", (req: Request<{ email: string }>, res: Response) => {
   const email = req.params.email;
   const member = findMember(email);
 
@@ -153,31 +155,29 @@ app.get("/members/:email", (req: Request<{ email: string }>, res: Response) => {
 });
 
 // POST add a new member (Protected)
-app.post("/members", requireAuth, (req: Request, res: Response) => {
+api.post("/members", requireAuth, (req: Request, res: Response) => {
   const member = req.body;
 
-  // Emails are how every other route finds a member, so a new one needs one,
-  // and none of them may already belong to someone else
-  if (
-    !Array.isArray(member?.emails) ||
-    member.emails.length === 0 ||
-    !member.emails.every(isNonEmptyString)
-  ) {
-    res.status(400).json({ error: "A new member needs a non-empty emails array of strings." });
+  const problems = validateNewMember(member);
+  if (problems.length > 0) {
+    res.status(400).json({ error: "This member is invalid.", details: problems });
     return;
   }
+
   const taken = takenEmail(member.emails);
   if (taken) {
     res.status(409).json({ error: `${taken} already belongs to another member.` });
     return;
   }
 
-  members.push(member);
-  res.status(201).json(member);
+  // Convert the body's date strings to Dates before storing, since the model expects real Dates
+  const stored = reviveNewMember(member);
+  members.push(stored);
+  res.status(201).json(stored);
 });
 
 // PUT edit a member's profile fields (Protected)
-app.put(
+api.put(
   "/members/:email",
   requireAuth,
   (req: Request<{ email: string }>, res: Response) => {
@@ -211,7 +211,7 @@ app.put(
 );
 
 // PUT move member to a new role (archives current roles to history) (Protected)
-app.put(
+api.put(
   "/members/:email/move",
   requireAuth,
   (req: Request<{ email: string }>, res: Response) => {
@@ -232,7 +232,7 @@ app.put(
 );
 
 // PUT move member to a new role (archives SPECIFIED current role to history) (Protected)
-app.put(
+api.put(
   "/members/:email/move-team",
   requireAuth,
   (req: Request<{ email: string }>, res: Response) => {
@@ -266,7 +266,7 @@ app.put(
 );
 
 // PUT add a role to a member without removing existing role (Protected)
-app.put(
+api.put(
   "/members/:email/add-role",
   requireAuth,
   (req: Request<{ email: string }>, res: Response) => {
@@ -287,7 +287,7 @@ app.put(
 );
 
 // DELETE a member and clear current supervisor references to them (Protected)
-app.delete(
+api.delete(
   "/members/:email",
   requireAuth,
   (req: Request<{ email: string }>, res: Response) => {
@@ -306,6 +306,8 @@ app.delete(
     }
   },
 );
+
+app.use("/api", api);
 
 /**
  * Fallbacks, registered after every route so they only see what nothing else handled
