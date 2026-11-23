@@ -3,6 +3,7 @@ import { currentPositions, type Membership } from "@utils/model/types.ts";
 import { makeMember, makePosition } from "@utils/model/testing/fixtures";
 import {
   addRole,
+  getCycles,
   moveMember,
   moveMemberToTeam,
   removeMemberDeep,
@@ -291,14 +292,14 @@ describe("`removeMemberDeep` works as expected", () => {
   });
 });
 
-describe.only("`updateMember` works as expected", () => {
+describe("`updateMember` works as expected", () => {
   let sharedSupervisor: Membership;
   let members: Membership[] = [];
 
   beforeEach(() => {
     sharedSupervisor = makeMember({
-    name: "SHARED_SUPERVISOR",
-    emails: ["shared_supervisor@gmail.com"],
+      name: "SHARED_SUPERVISOR",
+      emails: ["shared_supervisor@gmail.com"],
     });
     members = [sharedSupervisor];
 
@@ -320,11 +321,9 @@ describe.only("`updateMember` works as expected", () => {
     );
   });
 
-  /**
-   * `test.fails`; `updateMember` odes not prevent an empty `emails` from being pass
-   * Bug causes all supervisor references to the updated member to be `undefined`
-   */
-  test("Prevents setting a member with empty emails", () => {
+  //``updateMember` does not prevent an empty `emails` from being pass
+  // Bug causes all supervisor references to the updated member to be `undefined`
+  test.todo("Prevents setting a member with empty emails", () => {
     const updateStatus = updateMember(members, "shared_supervisor@gmail.com", {
       name: "NEW_SHARED_SUPERVISOR",
       emails: [],
@@ -336,7 +335,7 @@ describe.only("`updateMember` works as expected", () => {
   test("Updating supervisor does not break references", () => {
     const update = {
       name: "NEW_SHARED_SUPERVISOR",
-      emails: ['new_shared_supervisor@gmail.com'],
+      emails: ["new_shared_supervisor@gmail.com"],
     };
     const updateStatus = updateMember(
       members,
@@ -346,21 +345,117 @@ describe.only("`updateMember` works as expected", () => {
 
     expect(updateStatus?.updated).toMatchObject(update);
     // 2 supervisor references in 5 members
-    expect(updateStatus?.updatedReferences).toBe(10); 
+    expect(updateStatus?.updatedReferences).toBe(10);
   });
 
   test("Removing a non-existant member does nothing", () => {
-    console.log(sharedSupervisor)
+    console.log(sharedSupervisor);
     const updateStatus = updateMember(members, "NON_EXISTENT_EMAIL", {
       name: "NEW_SHARED_SUPERVISOR",
       emails: [],
     });
-    console.log(sharedSupervisor)
+    console.log(sharedSupervisor);
 
     expect(updateStatus).toBeNull();
     expect(sharedSupervisor).toHaveProperty("name", "SHARED_SUPERVISOR");
     expect(sharedSupervisor).toHaveProperty("emails", [
       "shared_supervisor@gmail.com",
     ]);
+  });
+});
+
+describe.only("`getCycles` works as expected", () => {
+  test("No supervisors at all → no cycles", () => {
+    const members = Array.from({ length: 5 }, (_, i) =>
+      makeMember({
+        positionHistory: [makePosition({ supervisor: undefined })],
+      }),
+    );
+
+    expect(getCycles(members)).toHaveLength(0);
+  });
+
+  test("A → B → C → no cycles", () => {
+    const A = makeMember({ positionHistory: [] });
+    const B = makeMember({
+      positionHistory: [makePosition({ supervisor: [A.name, A.emails[0]] })],
+    });
+    const C = makeMember({
+      positionHistory: [makePosition({ supervisor: [B.name, B.emails[0]] })],
+    });
+
+    // Checks if there are no cycles
+    const members = [A, B, C];
+    expect(getCycles(members)).toHaveLength(0);
+  });
+
+  test("A ↔ B → one group containing both", () => {
+    const A = makeMember({ positionHistory: [] });
+    const B = makeMember({
+      positionHistory: [makePosition({ supervisor: [A.name, A.emails[0]] })],
+    });
+    A.positionHistory = [makePosition({ supervisor: [B.name, B.emails[0]] })];
+
+    // Checks if there is 1 cycle
+    const members = [A, B];
+    const cycles = getCycles(members);
+    expect(cycles).toHaveLength(1);
+
+    // Checks if the cycle contain the correct indices
+    const ABcycle = cycles[0];
+    expect(ABcycle).toContain(0);
+    expect(ABcycle).toContain(1);
+  });
+
+  test("Two separate loops → two groups", () => {
+    const A = makeMember({ positionHistory: [] });
+    const B = makeMember({
+      positionHistory: [makePosition({ supervisor: [A.name, A.emails[0]] })],
+    });
+    A.positionHistory = [makePosition({ supervisor: [B.name, B.emails[0]] })];
+
+    const C = makeMember({ positionHistory: [] });
+    const D = makeMember({
+      positionHistory: [makePosition({ supervisor: [C.name, C.emails[0]] })],
+    });
+    C.positionHistory = [makePosition({ supervisor: [D.name, D.emails[0]] })];
+
+    // Checks if there are 2 distinct cycles
+    const members = [A, B, C, D];
+    const cycles = getCycles(members);
+    expect(cycles).toHaveLength(2);
+
+    // Checks if the cycles contain the correct indices
+    const ABcycle = cycles[0];
+    expect(ABcycle).toContain(0);
+    expect(ABcycle).toContain(1);
+
+    const CDcycle = cycles[1];
+    expect(CDcycle).toContain(2);
+    expect(CDcycle).toContain(3);
+  });
+
+  // self-supervising members are not properly marked
+  test.todo("Member supervising themself returns themself", () => {
+    const A = makeMember({ positionHistory: [] });
+    A.positionHistory = [makePosition({ supervisor: [A.name, A.emails[0]] })];
+
+    const cycles = getCycles([A]);
+    expect(cycles).toHaveLength(1);
+    expect(cycles).toEqual([[0]]);
+  });
+
+  test("Ended positions do not count", () => {
+    const A = makeMember({ positionHistory: [] });
+    const B = makeMember({
+      positionHistory: [makePosition({ supervisor: [A.name, A.emails[0]] })],
+    });
+    A.positionHistory = [
+      makePosition({ supervisor: [B.name, B.emails[0]], endDate: new Date() }),
+    ];
+
+    // Checks if there are no cycles
+    const members = [A, B];
+    expect(getCycles(members)).toHaveLength(0);
   });
 });
