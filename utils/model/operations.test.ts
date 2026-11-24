@@ -349,12 +349,10 @@ describe("`updateMember` works as expected", () => {
   });
 
   test("Removing a non-existant member does nothing", () => {
-    console.log(sharedSupervisor);
     const updateStatus = updateMember(members, "NON_EXISTENT_EMAIL", {
       name: "NEW_SHARED_SUPERVISOR",
       emails: [],
     });
-    console.log(sharedSupervisor);
 
     expect(updateStatus).toBeNull();
     expect(sharedSupervisor).toHaveProperty("name", "SHARED_SUPERVISOR");
@@ -364,7 +362,7 @@ describe("`updateMember` works as expected", () => {
   });
 });
 
-describe.only("`getCycles` works as expected", () => {
+describe("`getCycles` works as expected", () => {
   test("No supervisors at all → no cycles", () => {
     const members = Array.from({ length: 5 }, (_, i) =>
       makeMember({
