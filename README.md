@@ -98,3 +98,19 @@ This template comes with [Tailwind CSS](https://tailwindcss.com/) already config
 ---
 
 Built with ❤️ using React Router.
+
+## Testing
+
+Test files are named identically to their corresponding files except for a `.test.ts` file extension. 
+For example, for testing if helpers in `utils/model/types.ts` is working properly, unit tests are written in `utils/model/types.test.ts`.
+
+Moreover, testing helper functions such as for building dummy members are located under `utils/model/testing/fixtures.ts`.
+
+To run all Vitests, run
+```bash
+npm run test
+```
+To run all tests everytime a revalent file changes, run 
+```bash
+npm run test:watch
+```

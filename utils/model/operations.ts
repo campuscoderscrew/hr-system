@@ -5,7 +5,8 @@ import { currentPositions } from "./types";
  * Determines all cyclic supervisor relationships in linear time using Tarjan's
  * Strongly Connected Components Algorithm
  * @param members List of members to check for cycles
- * @returns A list of member indicies that create a cycle
+ * @returns A list of cycles. Each cycle is another list that contains the 
+ * member indices that create a cycle
  */
 function getCycles(members: Membership[]): number[][] {
   // Maps member email to indices

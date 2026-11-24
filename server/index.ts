@@ -6,6 +6,8 @@ import express, {
 } from "express";
 import session from "express-session";
 import { members } from "../utils/model/data";
+
+import cors from "cors"
 import {
   addRole,
   moveMember,
